@@ -16,7 +16,7 @@ class Table
     private $name;
     private $password;
     private $game;
-    private $players;
+    private $players_limit;
     private $rules;
 
     /**
@@ -28,25 +28,42 @@ class Table
         $this->conn = $database;
     }
 
-    /**
-     * Read $count games_table starting with $from_table_id from DataBase
-     * @param $from_table_id
-     * @param $count
-     * @return mysqli_stmt
-     */
-    public function readPaging($from_table_id, $count)
-    {
 
+    public function readOne($id)
+    {
         // select all query
-        $query = "SELECT * FROM" . Table::$DBTable_name . " LIMIT $from_table_id, $count";
+        $query = "SELECT * FROM " . Table::$DBTable_name . " WHERE id = $id";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
         // execute query
-        $stmt->execute();
+        if ($stmt->execute()) {
+            // get retrieved row
+            $row = $stmt->fetch();
 
-        return $stmt;
+            $this->id = $row['id'];
+            $this->name = $row['name'];
+            $this->password = $row['password'];
+            $this->game = $row['game'];
+            $this->players_limit = $row['players_limit'];
+            $this->rules = $row['rules'];
+            return true;
+        } else return $stmt->error;
+    }
+
+    public function readPaging($from_table_id, $count)
+    {
+        // select all query
+        $query = "SELECT * FROM " . Table::$DBTable_name . " LIMIT $from_table_id, $count";
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        if ($stmt->execute())
+            return $stmt;
+        else return $stmt->error;
     }
 
     /**
@@ -71,10 +88,24 @@ class Table
         $stmt = $this->conn->prepare($query);
 
         // execute query
-        if($stmt->execute())
+        if ($stmt->execute())
             return $stmt->insert_id;
-        else if($stmt->errno == 1062)
+        else if ($stmt->errno == 1062)
             return -1;
         else return null;
+    }
+
+    public function deleteTable($id)
+    {
+        $query = "DELETE FROM " . Table::$DBTable_name . " WHERE id = $id";
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        if ($stmt->execute())
+            return true;
+        else return false;
+
     }
 }
