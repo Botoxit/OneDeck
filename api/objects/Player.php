@@ -54,7 +54,7 @@ class Player
     public function readCurrent($id_table, $round)
     {
         // select all query
-        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id = '$id_table' LIMIT $round-1,$round";
+        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id_table = '$id_table' LIMIT $round-1,$round";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -94,15 +94,28 @@ class Player
         if ($players_count >= $players_limit)
             return 0;
 
-        $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, '$this->id_table', '$this->name', '$this->cards')";
-
-        // prepare query statement
-        $stmt = $this->conn->prepare($query);
+        $stmt = $this->createQuery();
 
         // execute query
         if ($stmt->execute())
             return $stmt->insert_id;
+        else if ($stmt->errno == 1062)
+            $this->sameUsername();
         else return -1;
+    }
+
+    private function sameUsername()
+    {
+
+        $query = "SELECT substr(name,) FROM " . Player::$DBTable_name . " WHERE id_table='$this->id_table'";
+        $stmt = $this->conn->prepare($query);
+        if (!$stmt->execute())
+            return -1;
+
+        $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, '$this->id_table', '$this->name', '$this->cards')";
+
+        // prepare query statement
+        return $this->conn->prepare($query);
     }
 
     /**
