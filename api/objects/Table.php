@@ -28,7 +28,15 @@ class Table
         $this->conn = $database;
     }
 
+    public static function getTableName(): string
+    {
+        return Table::$DBTable_name;
+    }
 
+    /**
+     * @param $id
+     * @return bool
+     */
     public function readOne($id)
     {
         // select all query
@@ -49,9 +57,14 @@ class Table
             $this->players_limit = $row['players_limit'];
             $this->rules = $row['rules'];
             return true;
-        } else return $stmt->error;
+        } else return false;
     }
 
+    /**
+     * @param $from_table_id
+     * @param $count
+     * @return mysqli_stmt|string
+     */
     public function readPaging($from_table_id, $count)
     {
         // select all query
@@ -68,21 +81,12 @@ class Table
 
     /**
      * Create a new table
-     * @param $name
-     * @param $password
-     * @param $game
-     * @param $players_limit
-     * @param $rules
-     * @return int|null => success = id | name already exist = -1 | other error = null
+     * @return int => success = id | name already exist = 0 | other error = -1
      */
-    public function newTable($name, $password, $game, $players_limit, $rules)
+    public function create()
     {
-        if ($password == null || $password == "")
-            $password = "NULL";
-        else $password = "'$password'";
-
         // select all query
-        $query = "INSERT INTO " . Table::$DBTable_name . " (id, name, password, game, players_limit, rules) VALUES (NULL, '$name', $password, '$game', '$players_limit', '$rules')";
+        $query = "INSERT INTO " . Table::$DBTable_name . " (id, name, password, game, players_limit, rules) VALUES (NULL, '$this->name', $this->password, '$this->game', '$this->players_limit', '$this->rules')";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -91,10 +95,14 @@ class Table
         if ($stmt->execute())
             return $stmt->insert_id;
         else if ($stmt->errno == 1062)
-            return -1;
-        else return null;
+            return 0;
+        else return -1;
     }
 
+    /**
+     * @param $id
+     * @return bool
+     */
     public function deleteTable($id)
     {
         $query = "DELETE FROM " . Table::$DBTable_name . " WHERE id = $id";
@@ -107,5 +115,78 @@ class Table
             return true;
         else return false;
 
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @param string $password
+     */
+    public function setPassword(string $password): void
+    {
+        $this->password = $password;
+    }
+
+    /**
+     * @return string
+     */
+    public function getGame(): string
+    {
+        return $this->game;
+    }
+
+    /**
+     * @param string $game
+     */
+    public function setGame(string $game): void
+    {
+        $this->game = $game;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPlayersLimit(): int
+    {
+        return $this->players_limit;
+    }
+
+    /**
+     * @param int $players_limit
+     */
+    public function setPlayersLimit(int $players_limit): void
+    {
+        $this->players_limit = $players_limit;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRules():array
+    {
+        return $this->rules;
+    }
+
+    /**
+     * @param array $rules
+     */
+    public function setRules(array $rules): void
+    {
+        $this->rules = $rules;
     }
 }
