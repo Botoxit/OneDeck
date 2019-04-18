@@ -100,22 +100,40 @@ class Player
         if ($stmt->execute())
             return $stmt->insert_id;
         else if ($stmt->errno == 1062)
-            $this->sameUsername();
+            return $this->sameUsername();
         else return -1;
     }
 
     private function sameUsername()
     {
-
-        $query = "SELECT substr(name,) FROM " . Player::$DBTable_name . " WHERE id_table='$this->id_table'";
+        $length = strlen($this->name);
+        $query = "SELECT count(*) FROM " . Player::$DBTable_name . " WHERE id_table='$this->id_table' AND SUBSTR(name,1,$length) = '$this->name' AND LENGTH(name) < $length+1";
         $stmt = $this->conn->prepare($query);
         if (!$stmt->execute())
             return -1;
+        $row = $stmt->fetch();
+        $this->name = $this->name . $row[0];
 
         $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, '$this->id_table', '$this->name', '$this->cards')";
 
+        $stmt = $this->conn->prepare($query);
+
+        if ($stmt->execute())
+            return 1;
+        else return -1;
+    }
+
+    public function delete()
+    {
+        $query = "DELETE FROM " . Player::$DBTable_name . " WHERE id = $this->id";
+
         // prepare query statement
-        return $this->conn->prepare($query);
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        if ($stmt->execute())
+            return true;
+        else return false;
     }
 
     /**

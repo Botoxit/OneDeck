@@ -100,12 +100,11 @@ class Table
     }
 
     /**
-     * @param $id
      * @return bool
      */
-    public function deleteTable($id)
+    public function deleteTable()
     {
-        $query = "DELETE FROM " . Table::$DBTable_name . " WHERE id = $id";
+        $query = "DELETE FROM " . Table::$DBTable_name . " WHERE id = $this->id";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -114,7 +113,6 @@ class Table
         if ($stmt->execute())
             return true;
         else return false;
-
     }
 
 
