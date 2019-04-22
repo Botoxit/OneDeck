@@ -136,6 +136,11 @@ class Player
         else return false;
     }
 
+    public function checkCards(array $cards)
+    {
+        return true;
+    }
+
     /**
      * @return int
      */
