@@ -12,10 +12,11 @@ class Game
     private $conn;
 
     // object properties
-    private $id;
-    private $cards;
-    private $round;
-    private $deck;
+    private $id = 0;
+    private $cards = [];
+    private $round = 0;
+    private $deck = [];
+    private $details = [];
 
     /**
      * Player constructor.
@@ -49,5 +50,82 @@ class Game
             $this->deck = $row['deck'];
             return true;
         } else return false;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCards(): array
+    {
+        return $this->cards;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFirstTableCard()
+    {
+        return $this->cards[0];
+    }
+
+    /**
+     * @param array $cards
+     * @return int
+     */
+    protected function addCards(array $cards): int
+    {
+        return array_unshift($this->cards, $cards);
+    }
+
+    /**
+     * @return int
+     */
+    public function getRound(): int
+    {
+        return $this->round;
+    }
+
+
+    /**
+     * @param int $count
+     * @return array
+     */
+    public function takeCards(int $count): array
+    {
+        return array_splice($this->deck, 0, $count);
+    }
+
+    /**
+     * @return array
+     */
+    public function getDetails(): array
+    {
+        return $this->details;
+    }
+
+    /**
+     * @param array $details
+     */
+    protected function setDetails(array $details): void
+    {
+        $this->details = $details;
+    }
+
+    public function checkCardsOwner(Player $player, array $cards)
+    {
+        $playerCards = $player->getCards();
+        foreach ($cards as $card) {
+            if(!in_array($playerCards,$card))
+                return false;
+        }
+        return true;
     }
 }

@@ -26,6 +26,11 @@ class Player
         $this->conn = $database;
     }
 
+    public static function getTableName(): string
+    {
+        return Player::$DBTable_name;
+    }
+
     /**
      * @param $id
      * @return bool

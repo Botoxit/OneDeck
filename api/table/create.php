@@ -56,7 +56,7 @@ if (!empty($data->name) &&
 
         // set response code - 503 service unavailable
         http_response_code(503);
-        echo json_encode(array("id" => -1, "message" => "Unable to create product."));
+        echo json_encode(array("id" => -1, "message" => "Unable to create table."));
     }
 } // tell the user data is incomplete
 else {
@@ -65,5 +65,5 @@ else {
     http_response_code(400);
 
     // tell the user
-    echo json_encode(array("id" => -2, "message" => "Unable to create product. Data is incomplete."));
+    echo json_encode(array("id" => -2, "message" => "Unable to create table. Data is incomplete."));
 }
