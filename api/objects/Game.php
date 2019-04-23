@@ -15,6 +15,7 @@ class Game
     private $id = 0;
     private $cards = [];
     private $round = 0;
+    private $total_players = 0;
     private $deck = [];
     private $details = [];
 
@@ -45,11 +46,27 @@ class Game
             $row = $stmt->fetch();
 
             $this->id = $row['id'];
-            $this->cards = $row['cards'];
-            $this->round = $row['round'];
-            $this->deck = $row['deck'];
+            $this->cards = json_decode($row['cards']);
+            $this->round = intdiv($row['round'], 10);
+            $this->total_players = $row['round'] % 10;
+            $this->deck = json_decode($row['deck']);
             return true;
         } else return false;
+    }
+
+    public function update()
+    {
+        $cards = json_encode($this->cards);
+        $this->round = ($this->round + 1) * 10 + $this->total_players;
+        $deck = json_encode($this->deck);
+        $details = json_encode($this->details);
+        $query = "UPDATE " . Game::$DBTable_name . " SET cards='$cards', round='$this->round', 
+            deck='$deck', details='$details'  WHERE id = '$this->id'";
+
+        $stmt = $this->conn->prepare($query);
+        if ($stmt->execute())
+            return true;
+        return false;
     }
 
     /**
@@ -117,15 +134,5 @@ class Game
     protected function setDetails(array $details): void
     {
         $this->details = $details;
-    }
-
-    public function checkCardsOwner(Player $player, array $cards)
-    {
-        $playerCards = $player->getCards();
-        foreach ($cards as $card) {
-            if(!in_array($playerCards,$card))
-                return false;
-        }
-        return true;
     }
 }

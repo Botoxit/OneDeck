@@ -128,6 +128,17 @@ class Player
         else return -1;
     }
 
+    public function update()
+    {
+        $cards = json_encode($this->cards);
+        $query = "UPDATE " . Player::$DBTable_name . " SET cards='$cards' WHERE id = '$this->id'";
+
+        $stmt = $this->conn->prepare($query);
+        if ($stmt->execute())
+            return true;
+        return false;
+    }
+
     public function delete()
     {
         $query = "DELETE FROM " . Player::$DBTable_name . " WHERE id = $this->id";
@@ -143,6 +154,10 @@ class Player
 
     public function checkCards(array $cards)
     {
+        foreach ($cards as $card) {
+            if (!in_array($this->cards, $card))
+                return false;
+        }
         return true;
     }
 
@@ -178,11 +193,16 @@ class Player
         return $this->cards;
     }
 
+    public function addCards(array $cards)
+    {
+        $this->cards = array_merge($this->cards, $cards);
+    }
+
     /**
      * @param mixed $cards
      */
-    public function setCards(array $cards)
+    public function removeCards(array $cards)
     {
-        $this->cards = $cards;
+        $this->cards = array_diff($this->cards,$cards);
     }
 }

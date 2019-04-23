@@ -44,19 +44,19 @@ if (!empty($data->name) &&
     $id = $table->create();
     if ($id > 0) {
 
+
         // set response code - 201 created
         http_response_code(201);
-        echo json_encode(array("status" => $id));
+        die(json_encode(array("status" => $id)));
     } // if unable to create the product, tell the user
     elseif ($id == 0) {
         // set response code - 200
         http_response_code(200);
-        echo json_encode(array("id" => 0, "message" => "Name already used."));
+        die(json_encode(array("status" => 0, "message" => "Name already used.")));
     } else {
-
         // set response code - 503 service unavailable
         http_response_code(503);
-        echo json_encode(array("id" => -1, "message" => "Unable to create table."));
+        die(json_encode(array("status" => -1, "message" => "Unable to create table.")));
     }
 } // tell the user data is incomplete
 else {
@@ -65,5 +65,5 @@ else {
     http_response_code(400);
 
     // tell the user
-    echo json_encode(array("id" => -2, "message" => "Unable to create table. Data is incomplete."));
+    die(json_encode(array("status" => -2, "message" => "Unable to create table. Data is incomplete.")));
 }

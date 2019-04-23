@@ -15,14 +15,14 @@ class DataBase
 
     public function getConnection()
     {
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
         $this->conn = null;
-
         try {
             $this->conn = new mysqli($this->server_name, $this->username, $this->password, $this->database);
-        } catch (mysqli_sql_exception $sql_exceptione) {
-            die(json_encode(array('status' => $sql_exceptione->getCode(), 'message' => $sql_exceptione->getMessage())));
+            $this->conn->autocommit(false);
+        } catch (mysqli_sql_exception $sql_exception) {
+            die(json_encode(array('status' => $sql_exception->getCode(), 'message' => $sql_exception->getMessage())));
         }
-
         return $this->conn;
     }
 }

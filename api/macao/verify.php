@@ -15,6 +15,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 // include database and object files
 include_once '../config/DataBase.php';
 include_once '../objects/Macao.php';
+include_once '../objects/Player.php';
 
 // instantiate database and table object
 $database = new Database();
@@ -29,22 +30,30 @@ $data = json_decode(file_get_contents("php://input"));
 // make sure data is not empty
 if (!empty($data->cards)) {
 
-    if(count($data->cards) > 1 && !$_SESSION['deck'])
+    if (count($data->cards) > 1 && !$_SESSION['deck'])
         die(json_encode(array('status' => 0, 'message' => "Decks is not allowed.")));
 
     $macao->readOne($_SESSION['id_table']);
-    $player->readCurrent($macao->getId(),$macao->getRound());
+    $player->readCurrent($macao->getId(), $macao->getRound());
 
-    if($player->getId() != $_SESSION['id_player'])
+    if ($player->getId() != $_SESSION['id_player'])
         die(json_encode(array('status' => 0, 'message' => "Is not your turn " . $_SESSION['id_player'] . ", is " . $player->getName() . " [" . $player->getId() . "] turn.")));
 
     if (!$macao->checkCards($player, $data->cards))
         die(json_encode(array('status' => 666, 'cards' => $player->getCards(), 'message' => "It's not your cards! YOU ARE A CHEATER!")));
 
-    if(!$macao->verify($data->cards))
+    if (!$macao->verify($data->cards))
         die(json_encode(array('status' => 0, 'message' => "This cards is not right.")));
 
+    $player->removeCards($data->cards);
 
+    if (!$player->update())
+        die(json_encode(array('status' => -1, 'message' => "Unable to update player.")));
+    if (!$macao->update())
+        die(json_encode(array('status' => -1, 'message' => "Unable to update game table.")));
+    if ($conn->commit())
+        die(json_encode(array('status' => 1)));
+    die(json_encode(array('status' => -1, 'message' => "Unable to commit.")));
 } // tell the user data is incomplete
 else {
 
@@ -52,5 +61,5 @@ else {
     http_response_code(400);
 
     // tell the user
-    echo json_encode(array("status" => -2, "message" => "Unable to verify cards. Data is incomplete."));
+    die(json_encode(array("status" => -2, "message" => "Unable to verify cards. Data is incomplete.")));
 }
