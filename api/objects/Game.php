@@ -57,7 +57,9 @@ class Game
     public function update()
     {
         $cards = json_encode($this->cards);
-        $this->round = ($this->round + 1) * 10 + $this->total_players;
+        if($this->round == $this->total_players)
+            $this->round = 10 + $this->total_players;
+        else $this->round = ($this->round + 1) * 10 + $this->total_players;
         $deck = json_encode($this->deck);
         $details = json_encode($this->details);
         $query = "UPDATE " . Game::$DBTable_name . " SET cards='$cards', round='$this->round', 
