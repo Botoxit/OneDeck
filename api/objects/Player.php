@@ -31,29 +31,18 @@ class Player
         return Player::$DBTable_name;
     }
 
-    /**
-     * @param $id
-     * @return bool
-     */
-    public function readOne($id)
+    public function readAll($id_table)
     {
         // select all query
-        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id = '$id'";
+        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id_table = '$id_table'";
 
         // prepare query statement
-        $stmt = $this->conn->prepare($query);
+        $result = $this->conn->query($query);
 
         // execute query
-        if ($stmt->execute()) {
-            // get retrieved row
-            $row = $stmt->fetch();
-
-            $this->id = $row['id'];
-            $this->id_table = $row['id_table'];
-            $this->name = $row['name'];
-            $this->cards = $row['cards'];
-            return true;
-        } else return false;
+        if ($result)
+            return $result;
+        else return $this->conn->error;
     }
 
     public function readCurrent($id_table, $round)
@@ -72,7 +61,7 @@ class Player
             $this->id = $row['id'];
             $this->id_table = $row['id_table'];
             $this->name = $row['name'];
-            $this->cards = $row['cards'];
+            $this->cards = json_decode($row['cards']);
             return true;
         } else return false;
     }
@@ -99,7 +88,10 @@ class Player
         if ($players_count >= $players_limit)
             return 0;
 
-        $stmt = $this->createQuery();
+        $cards = json_encode($this->cards);
+        $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, '$this->id_table', '$this->name', '$cards')";
+
+        $stmt = $this->conn->prepare($query);
 
         // execute query
         if ($stmt->execute())
@@ -119,7 +111,8 @@ class Player
         $row = $stmt->fetch();
         $this->name = $this->name . $row[0];
 
-        $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, '$this->id_table', '$this->name', '$this->cards')";
+        $cards = json_encode($this->cards);
+        $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, '$this->id_table', '$this->name', '$cards')";
 
         $stmt = $this->conn->prepare($query);
 
@@ -191,6 +184,11 @@ class Player
     public function getCards()
     {
         return $this->cards;
+    }
+
+    public function getCardsCount()
+    {
+        return count($this->cards);
     }
 
     public function addCards(array $cards)

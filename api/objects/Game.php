@@ -112,6 +112,11 @@ class Game
         return $this->round;
     }
 
+    public function getPlayerCount(): int
+    {
+        return $this->total_players;
+    }
+
 
     /**
      * @param int $count
@@ -141,5 +146,10 @@ class Game
     public function setDetails(array $details): void
     {
         $this->details = $details;
+    }
+
+    public function getDeckCount()
+    {
+        return count($this->deck);
     }
 }

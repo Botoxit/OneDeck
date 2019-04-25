@@ -77,7 +77,7 @@ class Table
         // execute query
         if ($result)
             return $result;
-        else return $result->error;
+        else return $this->conn->error;
     }
 
     public function search($from_table_id, $count, $name, $password, $game, $players_limit, $rules)
@@ -111,7 +111,7 @@ class Table
         // execute query
         if ($result)
             return $result;
-        else return $result->error;
+        else return $this->conn->error;
     }
 
     /**
