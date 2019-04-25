@@ -119,7 +119,12 @@ class Game
      */
     public function takeCards(int $count): array
     {
-        return array_splice($this->deck, 0, $count);
+        if($count <= count($this->deck))
+            return array_splice($this->deck, 0, $count);
+        $this->deck = shuffle(array_splice($this->deck, 1));
+        if($count <= count($this->deck))
+            return array_splice($this->deck, 0, $count);
+        return null;
     }
 
     /**
@@ -133,7 +138,7 @@ class Game
     /**
      * @param array $details
      */
-    protected function setDetails(array $details): void
+    public function setDetails(array $details): void
     {
         $this->details = $details;
     }

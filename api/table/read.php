@@ -8,6 +8,9 @@
 // required headers
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Max-Age: 3600");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 // include database and object files
 include_once '../config/DataBase.php';
@@ -20,48 +23,66 @@ $conn = $database->getConnection();
 // initialize object
 $table = new Table($conn);
 
-// query products
-$result = $table->read();
-$rowCount = $result->num_rows;
+// get posted data
+$data = json_decode(file_get_contents("php://input"));
+$search = false;
 
-// check if more than 0 record found
-if ($rowCount > 0) {
+if (empty($data->id)) $start_id = 0; else $start_id = $data->id;
+if (!empty($data->name)) {
+    $name = $data->name;
+    $search = true;
+} else $name = null;
 
-    // products array
-    $products_arr = array();
-    $products_arr["records"] = array();
+if (!empty($data->password)) {
+    $password = $data->password;
+    $search = true;
+} else $password = null;
 
-    // retrieve our table contents
-    // fetch() is faster than fetchAll()
-    // http://stackoverflow.com/questions/2770630/pdofetchall-vs-pdofetch-in-a-loop
-    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-        // extract row
-        // this will make $row['name'] to
-        // just $name only
-        extract($row);
+if (!empty($data->game)) {
+    $game = $data->game;
+    $search = true;
+} else $game = null;
 
-        $product_item = array(
-            "id" => $id,
-            "name" => $name,
-            "description" => html_entity_decode($description),
-            "price" => $price,
-            "category_id" => $category_id,
-            "category_name" => $category_name
-        );
+if (!empty($data->players_limit)) {
+    $players_limit = $data->players_limit;
+    $search = true;
+} else $players_limit = null;
 
-        array_push($products_arr["records"], $product_item);
-    }
+if (!empty($data->rules)) {
+    $rules = $data->rules;
+    $search = true;
+} else $rules = null;
 
-    // set response code - 200 OK
-    http_response_code(200);
-
-    // show products data in json format
-    echo json_encode($products_arr);
+if (!$search) {
+    $result = $table->readPaging($start_id, 100);
+    if (is_string($result))
+        die(json_encode(array("status" => -1, "message" => "sql_exception " . $result)));
+    if (!$result)
+        die(json_encode(array("status" => -1, "message" => "Unable to read database.")));
+    $rowCount = $result->num_rows;
 } else {
-
-    // set response code - 404 Not found
-    http_response_code(404);
-
-    // tell the user no products found
-    echo json_encode(array("message" => "No products found."));
+    $result = $table->search($start_id, 100, $name, $password, $game, $players_limit, $rules);
+    if (is_string($result))
+        die(json_encode(array("status" => -1, "message" => "sql_exception " . $result)));
+    if (!$result)
+        die(json_encode(array("status" => -1, "message" => "Unable to read database.")));
+    $rowCount = $result->num_rows;
 }
+
+$table_list = array();
+while ($row = $result->fetch_assoc()) {
+    $table_item = array(
+        "id" => $row['id'],
+        "name" => $row['name'],
+        "password" => $row['password'] == '' ? '' : 'da',
+        "game" => $row['game'],
+        "players_limit" => $row['players_limit'],
+        "rules" => json_decode($row['rules'])
+    );
+    array_push($table_list, $table_item);
+}
+// set response code - 200 OK
+http_response_code(200);
+if (count($table_list) > 0)
+    die(json_encode(array('status' => 1, 'table' => $table_list)));
+die(json_encode(array('status' => 0)));

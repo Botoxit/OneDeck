@@ -5,9 +5,12 @@
  * Time: 19:34
  */
 
+
+error_reporting(E_ALL);
+ini_set("display_errors", "On");
 class DataBase
 {
-    private $server_name = "127.0.0.1:53206";
+    private $server_name = "127.0.0.1:53257";
     private $username = "azure";
     private $password = "6#vWHD_$";
     private $database = "localdb";
@@ -21,7 +24,7 @@ class DataBase
             $this->conn = new mysqli($this->server_name, $this->username, $this->password, $this->database);
             $this->conn->autocommit(false);
         } catch (mysqli_sql_exception $sql_exception) {
-            die(json_encode(array('status' => $sql_exception->getCode(), 'message' => $sql_exception->getMessage())));
+            die(json_encode(array('status' => $sql_exception->getCode(), 'message' => 'sql_exception ' . $sql_exception->getMessage())));
         }
         return $this->conn;
     }

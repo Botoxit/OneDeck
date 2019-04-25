@@ -42,17 +42,16 @@ if (!empty($data->name) &&
 
     // create the product
     $id = $table->create();
-    if ($id > 0) {
 
-
-        // set response code - 201 created
-        http_response_code(201);
-        die(json_encode(array("status" => $id)));
-    } // if unable to create the product, tell the user
-    elseif ($id == 0) {
-        // set response code - 200
+    if ($id == 0) {
         http_response_code(200);
         die(json_encode(array("status" => 0, "message" => "Name already used.")));
+    } elseif ($id > 0) {
+        if ($conn->commit()) {
+            // set response code - 201 created
+            http_response_code(201);
+            die(json_encode(array("status" => $id)));
+        } else die(json_encode(array("status" => -1, "message" => "Unable to commit.")));
     } else {
         // set response code - 503 service unavailable
         http_response_code(503);

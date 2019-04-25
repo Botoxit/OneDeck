@@ -36,8 +36,11 @@ if(!empty($details['wait']))
 
 if(empty($details['takeCard']))
     $cards = $macao->takeCards(1);
-else $cards = $macao->takeCards($details['takeCard']);
-
+else {
+    $cards = $macao->takeCards($details['takeCard']);
+    unset($details['takeCard']);
+    $macao->setDetails($details);
+}
 $player->addCards($cards);
 
 if (!$player->update())
