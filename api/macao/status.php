@@ -15,6 +15,7 @@ header('Content-Type: application/json');
 // include database and object files
 include_once '../config/DataBase.php';
 include_once '../objects/Macao.php';
+include_once '../objects/Player.php';
 
 // instantiate database and product object
 $database = new DataBase();
@@ -25,7 +26,6 @@ $macao = new Macao($conn);
 
 if (!$macao->readOne($_SESSION['id_table']))
     die(json_encode(array("status" => -1, "message" => "Unable to read macao.")));
-$player_count = $macao->getPlayerCount();
 
 $player = new Player($conn);
 $result = $player->readAll($_SESSION['id_table']);
@@ -44,6 +44,7 @@ while ($row = $result->fetch_assoc()) {
     $i = $i + 1;
     if ($row['id'] != $_SESSION['id_player']) {
         $table_item = array(
+            "id" => $row['id'],
             "name" => $row['name'],
             "cards" => count($row['cards'])
         );
@@ -53,7 +54,7 @@ while ($row = $result->fetch_assoc()) {
         array_push($result['players'], $table_item);
     } else $me = $i - 1;
 }
-if($me+1 == $macao->getRound())
+if ($me + 1 == $macao->getRound())
     $result['status'] = 1;
 else $result['status'] = 0;
 // 1 2 [me]3 4     1 2  4    =  2       4 1 2

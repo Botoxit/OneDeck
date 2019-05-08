@@ -18,6 +18,7 @@ class Game
     private $total_players = 0;
     private $deck = [];
     private $details = [];
+    private $host = "";
 
     /**
      * Player constructor.
@@ -50,6 +51,23 @@ class Game
             $this->round = intdiv($row['round'], 10);
             $this->total_players = $row['round'] % 10;
             $this->deck = json_decode($row['deck']);
+            return true;
+        } else return false;
+    }
+
+    public function readHost($id)
+    {
+        // select all query
+        $query = "SELECT host FROM " . Game::$DBTable_name . " WHERE id = '$id'";
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        if ($stmt->execute()) {
+            // get retrieved row
+            $row = $stmt->fetch();
+            $this->host = $row['host'];
             return true;
         } else return false;
     }
@@ -152,4 +170,13 @@ class Game
     {
         return count($this->deck);
     }
+
+    /**
+     * @return string
+     */
+    public function getHost(): string
+    {
+        return $this->host;
+    }
+
 }

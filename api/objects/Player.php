@@ -31,6 +31,27 @@ class Player
         return Player::$DBTable_name;
     }
 
+    public function readOne($id)
+    {
+        // select all query
+        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id = '$id'";
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        if ($stmt->execute()) {
+            // get retrieved row
+            $row = $stmt->fetch();
+
+            $this->id = $row['id'];
+            $this->id_table = $row['id_table'];
+            $this->name = $row['name'];
+            $this->cards = json_decode($row['cards']);
+            return true;
+        } else return false;
+    }
+
     public function readAll($id_table)
     {
         // select all query
