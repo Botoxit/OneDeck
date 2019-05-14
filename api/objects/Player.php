@@ -175,6 +175,14 @@ class Player
         return true;
     }
 
+    public function ready()
+    {
+        if(empty($this->cards['ready']))
+            return false;
+        $this->cards['ready'] = !$this->cards['ready'];
+        return $this->cards['ready'];
+    }
+
     /**
      * @return int
      */

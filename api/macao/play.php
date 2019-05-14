@@ -40,22 +40,21 @@ if($macao->getHost() == $_SESSION['id_player'])
         // get retrieved row
         $row = $stmt->fetch();
         $ready_player = $row['count(*)'];
-        if($ready_player == $macao->getPlayerCount())
+        if($ready_player == $macao->getPlayerCount()) {
+
             die(json_encode(array('status' => 1)));
+        }
         else die(json_encode(array('status' => 0)));
     } else die(json_encode(array("status" => -1, "message" => "Unable to read ready player.")));
 }
 else
 {
-    $cards = $player->getCards();
-    if($cards['ready'])
-        $cards['ready'] = false;
-    else $cards['ready'] = true;
+    $ready = $player->ready();
     if (!$player->update())
         die(json_encode(array('status' => -1, 'message' => "Unable to update player.")));
     if (!$conn->commit())
         die(json_encode(array('status' => -1, 'message' => "Unable to commit.")));
-    if($cards['ready'])
+    if($ready)
         die(json_encode(array('status' => 1)));
     die(json_encode(array('status' => 0)));
 }
