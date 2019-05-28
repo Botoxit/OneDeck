@@ -35,13 +35,11 @@ if($macao->getHost() == $_SESSION['id_player'])
     $query = "SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = '" . $_SESSION['id_table'] . "' AND JSON_EXTRACT(cards,'$.ready') = 'true'";
     $stmt = $this->conn->prepare($query);
 
-    // execute query
     if ($stmt->execute()) {
-        // get retrieved row
         $row = $stmt->fetch();
         $ready_player = $row['count(*)'];
         if($ready_player == $macao->getPlayerCount()) {
-
+            $macao->new_game();
             die(json_encode(array('status' => 1)));
         }
         else die(json_encode(array('status' => 0)));

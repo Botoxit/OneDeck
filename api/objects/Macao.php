@@ -167,4 +167,11 @@ class Macao extends Game
         }
         return false;
     }
+
+    public function new_game()
+    {
+        $this->setRound(1);
+        $this->setDetails(array());
+
+    }
 }

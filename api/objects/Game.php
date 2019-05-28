@@ -130,6 +130,11 @@ class Game
         return $this->round;
     }
 
+    public function setRound($round)
+    {
+        $this->round = $round;
+    }
+
     public function getPlayerCount(): int
     {
         return $this->total_players;
