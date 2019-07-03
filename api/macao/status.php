@@ -28,7 +28,7 @@ if (!$macao->readOne($_SESSION['id_table']))
     die(json_encode(array("status" => -1, "message" => "Unable to read macao.")));
 
 $player = new Player($conn);
-$result = $player->readAll($_SESSION['id_table']);
+$players_list = $player->readAll($_SESSION['id_table']);
 if (!$result)
     die(json_encode(array("status" => -1, "message" => "Unable to read players.")));
 
@@ -40,7 +40,7 @@ $result['details'] = $macao->getDetails();
 $result['players'] = array();
 $i = 0;
 $me = 0;
-while ($row = $result->fetch_assoc()) {
+while ($row = $players_list->fetch_assoc()) {
     $i = $i + 1;
     if ($row['id'] != $_SESSION['id_player']) {
         $table_item = array(
