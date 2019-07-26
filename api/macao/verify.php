@@ -45,7 +45,11 @@ if (!empty($data->cards)) {
     if (!$macao->verify($data->cards))
         die(json_encode(array('status' => 0, 'message' => "This cards is not right.")));
 
-    $player->removeCards($data->cards);
+    if ($player->removeCards($data->cards) == 0) {
+        if (!isset($this->details['rank']))
+            $this->details['rank'] = array($_SESSION['id_player']);
+        else array_push($this->details, $_SESSION['id_player']);
+    }
 
     if (!$player->update())
         die(json_encode(array('status' => -1, 'message' => "Unable to update player.")));

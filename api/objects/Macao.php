@@ -5,6 +5,7 @@
  * Time: 20:26
  */
 include_once 'Game.php';
+include_once 'Player.php';
 
 class Macao extends Game
 {
@@ -168,10 +169,30 @@ class Macao extends Game
         return false;
     }
 
-    public function new_game()
+    public function new_game(Player $player)
     {
         $this->setRound(1);
-        $this->setDetails(array());
+        $this->setDetails(array('new_game' => $this->getPlayerCount()));
 
+        $deck = array(5, 6);
+        for ($i = 1; $i < 14; $i++) {
+            $num = $i * 10;
+            for ($j = 1; $j < 5; $j++) {
+                $num = $num + $j;
+                array_push($deck, $num);
+            }
+        }
+        shuffle($deck);
+
+        $players_list = $player->readAll($_SESSION['id_table']);
+        if (!$players_list)
+            die(json_encode(array("status" => -1, "message" => "Unable to read players.")));
+        while ($row = $players_list->fetch_assoc()) {
+            $player->readOne($row['id']);
+            $player->addCards($this->takeCards(5));
+            $player->update();
+        }
+
+        $this->addCards(array($this->takeCards(1)));
     }
 }

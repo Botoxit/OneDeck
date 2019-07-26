@@ -31,12 +31,16 @@ if ($player->getId() != $_SESSION['id_player'])
     die(json_encode(array('status' => 0, 'message' => "Is not your turn " . $_SESSION['id_player'] . ", is " . $player->getName() . " [" . $player->getId() . "] turn.")));
 
 $details = $macao->getDetails();
-if(!empty($details['wait']))
+if (!empty($details['wait']))
     die(json_encode(array('status' => 0, 'message' => "You can't take card in this situation.")));
 
-if(empty($details['takeCard']))
+if (empty($details['takeCard']))
     $cards = $macao->takeCards(1);
-else {
+elseif (!empty($details['new_game']) && $details['new_game'] > 0) {
+    $cards = $macao->takeCards(5);
+    $details['new_game'] = $details['new_game'] - 1;
+    $macao->setDetails($details);
+} else {
     $cards = $macao->takeCards($details['takeCard']);
     unset($details['takeCard']);
     $macao->setDetails($details);

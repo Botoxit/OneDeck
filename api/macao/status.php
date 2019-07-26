@@ -29,7 +29,7 @@ if (!$macao->readOne($_SESSION['id_table']))
 
 $player = new Player($conn);
 $players_list = $player->readAll($_SESSION['id_table']);
-if (!$result)
+if (!$players_list)
     die(json_encode(array("status" => -1, "message" => "Unable to read players.")));
 
 $result = array();
@@ -62,3 +62,4 @@ if ($me > 0 && $me < $i - 1) {
     $players_slice = array_splice($result['players'], 0, $me);
     $result['players'] = array_merge($result['players'], $players_slice);
 }
+// carti de pe masa, carti jucatori, runda, detalii

@@ -9,7 +9,7 @@ class Game
 {
     // database connection and table name
     private static $DBTable_name = "table";
-    private $conn;
+    protected $conn;
 
     // object properties
     private $id = 0;
@@ -75,7 +75,7 @@ class Game
     public function update()
     {
         $cards = json_encode($this->cards);
-        if($this->round == $this->total_players)
+        if($this->round >= $this->total_players)
             $this->round = 10 + $this->total_players;
         else $this->round = ($this->round + 1) * 10 + $this->total_players;
         $deck = json_encode($this->deck);
@@ -120,6 +120,11 @@ class Game
     protected function addCards(array $cards): int
     {
         return array_unshift($this->cards, $cards);
+    }
+
+    protected function setDeck(array $deck)
+    {
+        $this->deck = $deck;
     }
 
     /**
@@ -183,5 +188,4 @@ class Game
     {
         return $this->host;
     }
-
 }

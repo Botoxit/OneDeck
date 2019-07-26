@@ -177,8 +177,13 @@ class Player
 
     public function ready()
     {
-        if(empty($this->cards['ready']))
+        if(count($this->cards) > 0)
             return false;
+        if(!isset($this->cards['ready']))
+        {
+            $this->cards['ready'] = true;
+            return true;
+        }
         $this->cards['ready'] = !$this->cards['ready'];
         return $this->cards['ready'];
     }
@@ -225,11 +230,9 @@ class Player
         $this->cards = array_merge($this->cards, $cards);
     }
 
-    /**
-     * @param mixed $cards
-     */
     public function removeCards(array $cards)
     {
         $this->cards = array_diff($this->cards,$cards);
+        return count($this->cards);
     }
 }

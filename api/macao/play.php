@@ -39,7 +39,11 @@ if($macao->getHost() == $_SESSION['id_player'])
         $row = $stmt->fetch();
         $ready_player = $row['count(*)'];
         if($ready_player == $macao->getPlayerCount()) {
-            $macao->new_game();
+            $macao->new_game($player);
+            if(!$macao->update())
+                die(json_encode(array('status' => -1, 'message' => "Unable to update game table.")));
+            if (!$conn->commit())
+                die(json_encode(array('status' => -1, 'message' => "Unable to commit.")));
             die(json_encode(array('status' => 1)));
         }
         else die(json_encode(array('status' => 0)));
