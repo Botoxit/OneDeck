@@ -14,8 +14,7 @@ class Game
     // object properties
     private $id = 0;
     private $cards = [];
-    private $round = 0;
-    private $total_players = 0;
+    private $round = [];
     private $deck = [];
     private $details = [];
     private $host = "";
@@ -48,17 +47,16 @@ class Game
 
             $this->id = $row['id'];
             $this->cards = json_decode($row['cards']);
-            $this->round = intdiv($row['round'], 10);
-            $this->total_players = $row['round'] % 10;
+            $this->round = json_decode($row['round']);
             $this->deck = json_decode($row['deck']);
             return true;
         } else return false;
     }
 
-    public function readHost($id)
+    public function readHost($id_table)
     {
         // select all query
-        $query = "SELECT host FROM " . Game::$DBTable_name . " WHERE id = '$id'";
+        $query = "SELECT host FROM " . Game::$DBTable_name . " WHERE id = '$id_table'";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -72,15 +70,20 @@ class Game
         } else return false;
     }
 
-    public function update()
+    /**
+     * @param bool $macao
+     * @return bool
+     */
+    public function update(bool $macao = false)
     {
         $cards = json_encode($this->cards);
-        if($this->round >= $this->total_players)
-            $this->round = 10 + $this->total_players;
-        else $this->round = ($this->round + 1) * 10 + $this->total_players;
+        $current_player = array_splice($this->round, 0, 1);
+        if (!$macao)
+            array_push($this->round, $current_player);
+        $round = json_encode($this->round);
         $deck = json_encode($this->deck);
         $details = json_encode($this->details);
-        $query = "UPDATE " . Game::$DBTable_name . " SET cards='$cards', round='$this->round', 
+        $query = "UPDATE " . Game::$DBTable_name . " SET cards='$cards', round='$round', 
             deck='$deck', details='$details'  WHERE id = '$this->id'";
 
         $stmt = $this->conn->prepare($query);
@@ -132,17 +135,19 @@ class Game
      */
     public function getRound(): int
     {
-        return $this->round;
+        if (empty($this->round))
+            return 0;
+        return $this->round[0];
     }
 
-    public function setRound($round)
+    protected function setRound(array $round)
     {
         $this->round = $round;
     }
 
     public function getPlayerCount(): int
     {
-        return $this->total_players;
+        return count($this->round);
     }
 
 
@@ -152,10 +157,10 @@ class Game
      */
     public function takeCards(int $count): array
     {
-        if($count <= count($this->deck))
+        if ($count <= count($this->deck))
             return array_splice($this->deck, 0, $count);
-        $this->deck = shuffle(array_splice($this->deck, 1));
-        if($count <= count($this->deck))
+        $this->deck = shuffle(array_splice($this->cards, 1));
+        if ($count <= count($this->deck))
             return array_splice($this->deck, 0, $count);
         return null;
     }

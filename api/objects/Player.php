@@ -66,10 +66,10 @@ class Player
         else return $this->conn->error;
     }
 
-    public function readCurrent($id_table, $round)
+    public function readCurrent($id_player)
     {
         // select all query
-        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id_table = '$id_table' LIMIT $round-1,$round";
+        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id = $id_player";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -177,10 +177,9 @@ class Player
 
     public function ready()
     {
-        if(count($this->cards) > 0)
+        if (count($this->cards) > 0)
             return false;
-        if(!isset($this->cards['ready']))
-        {
+        if (!isset($this->cards['ready'])) {
             $this->cards['ready'] = true;
             return true;
         }
@@ -230,9 +229,14 @@ class Player
         $this->cards = array_merge($this->cards, $cards);
     }
 
+    public function setCards(array $cards)
+    {
+        $this->cards = $cards;
+    }
+
     public function removeCards(array $cards)
     {
-        $this->cards = array_diff($this->cards,$cards);
+        $this->cards = array_diff($this->cards, $cards);
         return count($this->cards);
     }
 }

@@ -48,13 +48,13 @@ while ($row = $players_list->fetch_assoc()) {
             "name" => $row['name'],
             "cards" => count($row['cards'])
         );
-        if ($i == $macao->getRound())
+        if ($row['id'] == $macao->getRound())
             $table_item['id'] = 1;
         else $table_item['id'] = 0;
         array_push($result['players'], $table_item);
     } else $me = $i - 1;
 }
-if ($me + 1 == $macao->getRound())
+if ($_SESSION['id_player'] == $macao->getRound())
     $result['status'] = 1;
 else $result['status'] = 0;
 // 1 2 [me]3 4     1 2  4    =  2       4 1 2

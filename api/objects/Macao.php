@@ -171,9 +171,6 @@ class Macao extends Game
 
     public function new_game(Player $player)
     {
-        $this->setRound(1);
-        $this->setDetails(array('new_game' => $this->getPlayerCount()));
-
         $deck = array(5, 6);
         for ($i = 1; $i < 14; $i++) {
             $num = $i * 10;
@@ -184,15 +181,30 @@ class Macao extends Game
         }
         shuffle($deck);
 
+        $round = [];
         $players_list = $player->readAll($_SESSION['id_table']);
         if (!$players_list)
             die(json_encode(array("status" => -1, "message" => "Unable to read players.")));
         while ($row = $players_list->fetch_assoc()) {
             $player->readOne($row['id']);
-            $player->addCards($this->takeCards(5));
+//            $player->setCards($this->takeCards(5));
+            $player->setCards(array());
             $player->update();
+
+            array_push($round, $row['id']);
         }
 
+        $details = $this->getDetails();
+        if (!empty($details['rank'])) {
+            $key = array_search($details['rank'][0], $round);
+            if ($key > 0) {
+                $players_slice = array_splice($round, 0, $key);
+                $round = array_merge($round, $players_slice);
+            }
+        }
+
+        $this->setRound($round);
+        $this->setDetails(array('new_game' => $this->getPlayerCount()));
         $this->addCards(array($this->takeCards(1)));
     }
 }

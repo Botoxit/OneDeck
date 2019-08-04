@@ -34,7 +34,7 @@ if (!empty($data->cards)) {
         die(json_encode(array('status' => 0, 'message' => "Decks is not allowed.")));
 
     $macao->readOne($_SESSION['id_table']);
-    $player->readCurrent($macao->getId(), $macao->getRound());
+    $player->readCurrent($macao->getRound());
 
     if ($player->getId() != $_SESSION['id_player'])
         die(json_encode(array('status' => 0, 'message' => "Is not your turn " . $_SESSION['id_player'] . ", is " . $player->getName() . " [" . $player->getId() . "] turn.")));
@@ -45,15 +45,17 @@ if (!empty($data->cards)) {
     if (!$macao->verify($data->cards))
         die(json_encode(array('status' => 0, 'message' => "This cards is not right.")));
 
+    $win = false;
     if ($player->removeCards($data->cards) == 0) {
+        $win = true;
         if (!isset($this->details['rank']))
             $this->details['rank'] = array($_SESSION['id_player']);
-        else array_push($this->details, $_SESSION['id_player']);
+        else array_push($this->details['rank'], $_SESSION['id_player']);
     }
 
     if (!$player->update())
         die(json_encode(array('status' => -1, 'message' => "Unable to update player.")));
-    if (!$macao->update())
+    if (!$macao->update($win))
         die(json_encode(array('status' => -1, 'message' => "Unable to update game table.")));
     if ($conn->commit())
         die(json_encode(array('status' => 1)));

@@ -25,8 +25,7 @@ $macao = new Macao($conn);
 $player = new Player($conn);
 
 $macao->readOne($_SESSION['id_table']);
-$player->readCurrent($macao->getId(), $macao->getRound());
-
+$player->readCurrent($macao->getRound());
 if ($player->getId() != $_SESSION['id_player'])
     die(json_encode(array('status' => 0, 'message' => "Is not your turn " . $_SESSION['id_player'] . ", is " . $player->getName() . " [" . $player->getId() . "] turn.")));
 
@@ -36,11 +35,12 @@ if (!empty($details['wait']))
 
 if (empty($details['takeCard']))
     $cards = $macao->takeCards(1);
-elseif (!empty($details['new_game']) && $details['new_game'] > 0) {
-    $cards = $macao->takeCards(5);
-    $details['new_game'] = $details['new_game'] - 1;
-    $macao->setDetails($details);
-} else {
+//elseif (!empty($details['new_game']) && $details['new_game'] > 0) {
+//    $cards = $macao->takeCards(5);
+//    $details['new_game'] = $details['new_game'] - 1;
+//    $macao->setDetails($details);
+//}
+else {
     $cards = $macao->takeCards($details['takeCard']);
     unset($details['takeCard']);
     $macao->setDetails($details);
