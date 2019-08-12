@@ -49,6 +49,7 @@ class Game
             $this->cards = json_decode($row['cards']);
             $this->round = json_decode($row['round']);
             $this->deck = json_decode($row['deck']);
+            $this->host = $row['host'];
             return true;
         } else return false;
     }

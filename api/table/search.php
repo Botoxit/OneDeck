@@ -16,43 +16,40 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 include_once '../config/DataBase.php';
 include_once '../objects/Table.php';
 
-// instantiate database and product object
-$database = new DataBase();
-$conn = $database->getConnection();
-
-// initialize object
-$table = new Table($conn);
-
+// get database connection
+$conn = DataBase::getConnection();
 // get posted data
-$data = json_decode(file_get_contents("php://input"));
+$post = json_decode(file_get_contents("php://input"));
+
 $search = false;
 
-if (empty($data->id)) $start_id = 0; else $start_id = $data->id;
-if (!empty($data->name)) {
-    $name = $data->name;
+if (empty($post->id)) $start_id = 0; else $start_id = $post->id;    // paging
+if (!empty($post->name)) {
+    $name = $post->name;
     $search = true;
 } else $name = null;
 
-if (!empty($data->password)) {
-    $password = $data->password;
+if (!empty($post->password)) {
+    $password = $post->password;
     $search = true;
 } else $password = null;
 
-if (!empty($data->game)) {
-    $game = $data->game;
+if (!empty($post->game)) {
+    $game = $post->game;
     $search = true;
 } else $game = null;
 
-if (!empty($data->players_limit)) {
-    $players_limit = $data->players_limit;
+if (!empty($post->players_limit)) {
+    $players_limit = $post->players_limit;
     $search = true;
 } else $players_limit = null;
 
-if (!empty($data->rules)) {
-    $rules = $data->rules;
+if (!empty($post->rules)) {
+    $rules = $post->rules;
     $search = true;
 } else $rules = null;
 
+$table = new Table();
 if (!$search) {
     $result = $table->readPaging($start_id, 100);
     if (is_string($result))
@@ -74,15 +71,15 @@ while ($row = $result->fetch_assoc()) {
     $table_item = array(
         "id" => $row['id'],
         "name" => $row['name'],
-        "password" => $row['password'] == '' ? '' : 'da',
+        "password" => $row['password'] == '' ? '' : 'X',
         "game" => $row['game'],
         "players_limit" => $row['players_limit'],
         "rules" => json_decode($row['rules'])
     );
     array_push($table_list, $table_item);
 }
-// set response code - 200 OK
-http_response_code(200);
+
+http_response_code(200);    // set response code - 200 OK
 if (count($table_list) > 0)
     die(json_encode(array('status' => 1, 'table' => $table_list)));
 die(json_encode(array('status' => 0)));

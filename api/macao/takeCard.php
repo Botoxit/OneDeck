@@ -33,13 +33,13 @@ $details = $macao->getDetails();
 if (!empty($details['wait']))
     die(json_encode(array('status' => 0, 'message' => "You can't take card in this situation.")));
 
-if (empty($details['takeCard']))
+if (!empty($details['new_game']) && $details['new_game'] > 0) {
+    $cards = $macao->takeCards(5);
+    $details['new_game'] = $details['new_game'] - 1;
+    $macao->setDetails($details);
+}
+elseif (empty($details['takeCard']))
     $cards = $macao->takeCards(1);
-//elseif (!empty($details['new_game']) && $details['new_game'] > 0) {
-//    $cards = $macao->takeCards(5);
-//    $details['new_game'] = $details['new_game'] - 1;
-//    $macao->setDetails($details);
-//}
 else {
     $cards = $macao->takeCards($details['takeCard']);
     unset($details['takeCard']);

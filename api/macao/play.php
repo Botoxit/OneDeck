@@ -17,9 +17,7 @@ include_once '../config/DataBase.php';
 include_once '../objects/Macao.php';
 include_once '../objects/Player.php';
 
-// instantiate database and product object
-$database = new DataBase();
-$conn = $database->getConnection();
+$conn = DataBase::getConnection();
 
 // initialize object
 $player = new Player($conn);
@@ -27,13 +25,13 @@ $macao = new Macao($conn);
 
 if($player->readOne($_SESSION['id_player']))
     die(json_encode(array("status" => -1, "message" => "Unable to read player.")));
-if($macao->readHost($_SESSION['id_table']))
+if($macao->readOne($_SESSION['id_table']))
     die(json_encode(array("status" => -1, "message" => "Unable to read macao host.")));
 
 if($macao->getHost() == $_SESSION['id_player'])
 {
     $query = "SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = '" . $_SESSION['id_table'] . "' AND JSON_EXTRACT(cards,'$.ready') = 'true'";
-    $stmt = $this->conn->prepare($query);
+    $stmt = $conn->prepare($query);
 
     if ($stmt->execute()) {
         $row = $stmt->fetch();

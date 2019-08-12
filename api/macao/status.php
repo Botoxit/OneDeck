@@ -43,17 +43,23 @@ $me = 0;
 while ($row = $players_list->fetch_assoc()) {
     $i = $i + 1;
     if ($row['id'] != $_SESSION['id_player']) {
+        $player_cards = json_decode($row['cards']);
+        if ($macao->getPlayerCount() < 2 && (!isset($player_cards['ready']) || $player_cards['ready'] = false))
+            $player_cards = array();
         $table_item = array(
-            "id" => $row['id'],
+            "id" => 0,
             "name" => $row['name'],
-            "cards" => count($row['cards'])
+            "cards" => count($player_cards)
         );
-        if ($row['id'] == $macao->getRound())
+        if ($macao->getPlayerCount() < 2) {
+            if(isset($player_cards['ready']) || $player_cards['ready'] = true)
+                $table_item['id'] = 1;
+        } elseif ($row['id'] == $macao->getRound())
             $table_item['id'] = 1;
-        else $table_item['id'] = 0;
         array_push($result['players'], $table_item);
     } else $me = $i - 1;
 }
+
 if ($_SESSION['id_player'] == $macao->getRound())
     $result['status'] = 1;
 else $result['status'] = 0;

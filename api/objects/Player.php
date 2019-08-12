@@ -13,17 +13,14 @@ class Player
 
     // object properties
     private $id = 0;
-    private $id_table = 0;
+    private $id_table = null;
     private $name = "Player";
     private $cards;
 
-    /**
-     * Player constructor.
-     * @param $database
-     */
-    public function __construct(mysqli $database)
+    public function __construct(string $newName)
     {
-        $this->conn = $database;
+        $this->name = $newName;
+        $conn = DataBase::getConnection();
     }
 
     public static function getTableName(): string
@@ -33,10 +30,7 @@ class Player
 
     public function readOne($id)
     {
-        // select all query
         $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id = '$id'";
-
-        // prepare query statement
         $stmt = $this->conn->prepare($query);
 
         // execute query
@@ -92,54 +86,15 @@ class Player
      */
     public function create()
     {
-        $query = "SELECT players_limit FROM " . Table::getTableName() . " WHERE id='$this->id_table'";
-        $stmt = $this->conn->prepare($query);
-        if (!$stmt->execute())
-            return -1;
-        $row = $stmt->fetch();
-        $players_limit = $row['players_limit'];
+        $conn = DataBase::getConnection();
+        $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, ?, ?, '{}')";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param('is', $this->id_table, $this->name);
 
-        $query = "SELECT count(*) FROM " . Player::$DBTable_name . " WHERE id_table='$this->id_table'";
-        $stmt = $this->conn->prepare($query);
-        if (!$stmt->execute())
-            return -1;
-        $row = $stmt->fetch();
-        $players_count = $row['players_limit'];
-
-        if ($players_count >= $players_limit)
-            return 0;
-
-        $cards = json_encode($this->cards);
-        $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, '$this->id_table', '$this->name', '$cards')";
-
-        $stmt = $this->conn->prepare($query);
-
-        // execute query
-        if ($stmt->execute())
-            return $stmt->insert_id;
-        else if ($stmt->errno == 1062)
-            return $this->sameUsername();
-        else return -1;
-    }
-
-    private function sameUsername()
-    {
-        $length = strlen($this->name);
-        $query = "SELECT count(*) FROM " . Player::$DBTable_name . " WHERE id_table='$this->id_table' AND SUBSTR(name,1,$length) = '$this->name' AND LENGTH(name) < $length+1";
-        $stmt = $this->conn->prepare($query);
-        if (!$stmt->execute())
-            return -1;
-        $row = $stmt->fetch();
-        $this->name = $this->name . $row[0];
-
-        $cards = json_encode($this->cards);
-        $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, '$this->id_table', '$this->name', '$cards')";
-
-        $stmt = $this->conn->prepare($query);
-
-        if ($stmt->execute())
-            return 1;
-        else return -1;
+        if ($stmt->execute()) {
+            $this->id = $stmt->insert_id;
+            return $this->id;
+        } else return -1;
     }
 
     public function update()
@@ -177,9 +132,9 @@ class Player
 
     public function ready()
     {
-        if (count($this->cards) > 0)
-            return false;
         if (!isset($this->cards['ready'])) {
+            if (count($this->cards) > 0)
+                return false;
             $this->cards['ready'] = true;
             return true;
         }
@@ -196,11 +151,11 @@ class Player
     }
 
     /**
-     * @return int
+     * @param int $idTable
      */
-    public function getIdTable()
+    public function setIdTable(int $idTable) : void
     {
-        return $this->id_table;
+        $this->id_table = $idTable;
     }
 
     /**
@@ -217,11 +172,6 @@ class Player
     public function getCards()
     {
         return $this->cards;
-    }
-
-    public function getCardsCount()
-    {
-        return count($this->cards);
     }
 
     public function addCards(array $cards)

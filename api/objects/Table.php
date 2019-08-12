@@ -10,7 +10,6 @@ class Table
     // database connection and table name
     private static $DBTable_name = "tables_list";
     private $conn;
-
     // object properties
     private $id;
     private $name;
@@ -18,14 +17,30 @@ class Table
     private $game;
     private $players_limit;
     private $rules;
+    private $host;
+
+    public function __construct()
+    {
+        $this->conn = DataBase::getConnection();
+    }
 
     /**
-     * Table constructor.
-     * @param $database
+     * Table parameter setter
+     * @param string $newName
+     * @param string $newPassword
+     * @param string $newGame
+     * @param int $newPlayerLimit
+     * @param array $newRules
+     * @param int $newHost
      */
-    public function __construct(mysqli $database)
+    public function setter(string $newName, string $newPassword, string $newGame, int $newPlayerLimit, array $newRules, int $newHost)
     {
-        $this->conn = $database;
+        $this->name = $newName;
+        $this->password = $newPassword;
+        $this->game = $newGame;
+        $this->players_limit = $newPlayerLimit;
+        $this->rules = $newRules;
+        $this->host = $newHost;
     }
 
     public static function getTableName(): string
@@ -40,14 +55,11 @@ class Table
     public function readOne($id)
     {
         // select all query
-        $query = "SELECT * FROM " . Table::$DBTable_name . " WHERE id = $id";
-
-        // prepare query statement
+        $query = "SELECT * FROM " . Table::$DBTable_name . " WHERE id = ?";
         $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('i', $id);
 
-        // execute query
         if ($stmt->execute()) {
-            // get retrieved row
             $row = $stmt->fetch();
 
             $this->id = $row['id'];
@@ -60,29 +72,24 @@ class Table
         } else return false;
     }
 
-
     /**
-     * @param $from_table_id
-     * @param $count
-     * @return bool|mysqli_result
+     * @param int $fromTableId
+     * @param int $count
+     * @return false|mysqli_result|string
      */
-    public function readPaging($from_table_id, $count)
+    public function readPaging(int $fromTableId, int $count)
     {
-        // select all query
-        $query = "SELECT * FROM " . Table::$DBTable_name . " LIMIT $from_table_id, $count";
+        $query = "SELECT * FROM " . Table::$DBTable_name . " LIMIT ?, ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('ii', $fromTableId, $count);
 
-        // prepare query statement
-        $result = $this->conn->query($query);
-
-        // execute query
-        if ($result)
-            return $result;
-        else return $this->conn->error;
+        if ($stmt->execute())
+            return $stmt->get_result();
+        else return $stmt->error;
     }
 
     public function search($from_table_id, $count, $name, $password, $game, $players_limit, $rules)
     {
-        // select all query
         $query = "SELECT * FROM " . Table::$DBTable_name . " WHERE";
 
         if (!empty($name))
@@ -115,28 +122,34 @@ class Table
     }
 
     /**
-     * Create a new table
+     * Create a new table, all table variables need to be filed.
      * @return int => success = id | name already exist = 0 | other error = -1
      */
     public function create()
     {
-        try {
-            $rules = json_encode($this->rules);
-            // select all query
-            $query = "INSERT INTO " . Table::$DBTable_name . " (id, name, password, game, players_limit, rules) VALUES (NULL, '$this->name', $this->password, '$this->game', '$this->players_limit', '$rules')";
+        $rules = json_encode($this->rules);
 
-            // prepare query statement
-            $stmt = $this->conn->prepare($query);
+        $query = "INSERT INTO " . Table::$DBTable_name . " (id, name, password, game, players_limit, rules, host) VALUES (NULL, ?, ?, ?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('sssisi', $this->name, $this->password, $this->game, $this->players_limit, $rules, $this->host);
 
-            // execute query
-            if ($stmt->execute())
-                return $stmt->insert_id;
-            return -1;
-        } catch (mysqli_sql_exception $e) {
-            if($e->getCode() == 1062)
-                return 0;
-            return -1;
-        }
+        if ($stmt->execute()) {
+            $this->id = $stmt->insert_id;
+            return $this->id;
+        } elseif ($stmt->errno == 1062)
+            return 0;
+        return -1;
+    }
+
+    public function update()
+    {
+        $query = "UPDATE " . Table::$DBTable_name . " SET players_limit = ? , host = ? WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('iii', $this->players_limit, $this->host, $this->id);
+
+        if ($stmt->execute())
+            return true;
+        return false;
     }
 
     /**
@@ -165,35 +178,11 @@ class Table
     }
 
     /**
-     * @param string $name
-     */
-    public function setName(string $name): void
-    {
-        $this->name = $name;
-    }
-
-    /**
-     * @param string $password
-     */
-    public function setPassword(string $password): void
-    {
-        $this->password = $password;
-    }
-
-    /**
      * @return string
      */
     public function getGame(): string
     {
         return $this->game;
-    }
-
-    /**
-     * @param string $game
-     */
-    public function setGame(string $game): void
-    {
-        $this->game = $game;
     }
 
     /**
@@ -205,9 +194,9 @@ class Table
     }
 
     /**
-     * @param int $players_limit
+     * @param mixed $players_limit
      */
-    public function setPlayersLimit(int $players_limit): void
+    public function setPlayersLimit($players_limit): void
     {
         $this->players_limit = $players_limit;
     }
@@ -221,10 +210,10 @@ class Table
     }
 
     /**
-     * @param $rules
+     * @return mixed
      */
-    public function setRules($rules): void
+    public function getHost()
     {
-        $this->rules = $rules;
+        return $this->host;
     }
 }

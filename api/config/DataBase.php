@@ -10,22 +10,26 @@ error_reporting(E_ALL);
 ini_set("display_errors", "On");
 class DataBase
 {
-    private $server_name = "127.0.0.1:53257";
-    private $username = "azure";
-    private $password = "6#vWHD_$";
-    private $database = "localdb";
-    private $conn;
+    private const HOST = "127.0.0.1:53257";
+    private const USER = "azure";
+    private const PASSWORD = "6#vWHD_$";
+    private const DATABASE = "localdb";
+    private static $conn;
 
-    public function getConnection()
+    /**
+     * @return mysqli
+     */
+    public static function getConnection()
     {
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-        $this->conn = null;
+        if(get_class(self::$conn) == get_class(mysqli))
+            return self::$conn;
         try {
-            $this->conn = new mysqli($this->server_name, $this->username, $this->password, $this->database);
-            $this->conn->autocommit(false);
+            self::$conn = new mysqli(self::HOST, self::USER, self::PASSWORD, self::DATABASE);
+            self::$conn->autocommit(false);
         } catch (mysqli_sql_exception $sql_exception) {
             die(json_encode(array('status' => $sql_exception->getCode(), 'message' => 'sql_exception ' . $sql_exception->getMessage())));
         }
-        return $this->conn;
+        return self::$conn;
     }
 }
