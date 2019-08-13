@@ -21,33 +21,48 @@ $conn = DataBase::getConnection();
 $macao = new Macao();
 $player = new Player();
 
-$macao->readOne($_SESSION['id_table']);
-$player->readCurrent($macao->getRound());
-if ($player->getId() != $_SESSION['id_player'])
-    die(json_encode(array('status' => 0, 'message' => "Is not your turn " . $_SESSION['id_player'] . ", is " . $player->getName() . " [" . $player->getId() . "] turn.")));
+try {
+    $player->readOne($_SESSION['id_player']);
+    $macao->readOne($player->getIdTable());
 
-$details = $macao->getDetails();
-if (!empty($details['wait']))
-    die(json_encode(array('status' => 0, 'message' => "You can't take card in this situation.")));
+    if ($player->getId() != $_SESSION['id_player'])
+        die(json_encode(array('status' => 0, 'message' => "Is not your turn " . $_SESSION['id_player'] . ", is " . $player->getName() . " [" . $player->getId() . "] turn.")));
 
-if (!empty($details['new_game']) && $details['new_game'] > 0) {
-    $cards = $macao->takeCards(5);
-    $details['new_game'] = $details['new_game'] - 1;
-    $macao->setDetails($details);
-}
-elseif (empty($details['takeCard']))
-    $cards = $macao->takeCards(1);
-else {
-    $cards = $macao->takeCards($details['takeCard']);
-    unset($details['takeCard']);
-    $macao->setDetails($details);
-}
-$player->addCards($cards);
+    $details = $macao->getDetails();
+    if (!empty($details['wait']))
+        die(json_encode(array('status' => 0, 'message' => "You can't take card in this situation.")));
 
-if (!$player->update())
-    die(json_encode(array('status' => -1, 'message' => "Unable to update player.")));
-if (!$macao->update())
-    die(json_encode(array('status' => -1, 'message' => "Unable to update game table.")));
-if ($conn->commit())
+    if (!empty($details['new_game']) && $details['new_game'] > 0) {
+        $cards = $macao->takeCards(5);
+        $details['new_game'] = $details['new_game'] - 1;
+        $macao->setDetails($details);
+    } elseif (empty($details['takeCard']))
+        $cards = $macao->takeCards(1);
+    else {
+        $cards = $macao->takeCards($details['takeCard']);
+        unset($details['takeCard']);
+        $macao->setDetails($details);
+    }
+    $player->addCards($cards);
+
+    $player->update();
+    $macao->update();
+    if (!$conn->commit())
+        throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
     die(json_encode(array('status' => 1, 'cards' => $cards)));
-die(json_encode(array('status' => -1, 'message' => "Unable to commit.")));
+} catch (GameException $e) {
+    switch ($e->getCode()) {
+        case 1:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read player.")));
+        case 2:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read macao game data.")));
+        case 3:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update macao game data.")));
+        case 4:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to commit.")));
+        case 5:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read ready player.")));
+        case 6:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update player.")));
+    }
+}

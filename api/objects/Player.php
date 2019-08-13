@@ -36,9 +36,8 @@ class Player
     }
 
     /**
-     * Read from database player data for an id
      * @param $id
-     * @return bool
+     * @throws GameException
      */
     public function readOne($id)
     {
@@ -53,14 +52,14 @@ class Player
             $this->id_table = $row['id_table'];
             $this->name = $row['name'];
             $this->cards = json_decode($row['cards']);
-            return true;
-        } else return false;
+        } else throw new GameException("Unable to read player with id $id, $stmt->errno: $stmt->error", 1);
     }
 
+
     /**
-     * Read all player from a table
      * @param $id_table
-     * @return int|mysqli_result
+     * @return false|mysqli_result
+     * @throws GameException
      */
     public function readAll($id_table)
     {
@@ -70,12 +69,12 @@ class Player
 
         if ($stmt->execute())
             return $stmt->get_result();
-        else return $stmt->errno;
+        else throw new GameException("Unable to read players for table with id $id_table, $stmt->errno: $stmt->error", 7);
     }
 
     /**
-     * Create new Player with class attributes
-     * @return int (player id or -1 for fail)
+     * @return int
+     * @throws GameException
      */
     public function create()
     {
@@ -85,40 +84,36 @@ class Player
 
         if ($stmt->execute()) {
             $this->id = $stmt->insert_id;
+            $_SESSION['id_player'] = $this->id;
             return $this->id;
-        } else return -1;
+        } else throw new GameException("Unable to create player, $stmt->errno: $stmt->error", 10);
     }
 
     /**
-     * Update Player with class attributes
-     * @return bool
+     * @throws GameException
      */
     public function update()
     {
         $cards = json_encode($this->cards);
-        $query = "UPDATE " . Player::$DBTable_name . " SET cards='$cards' WHERE id = '$this->id'";
-
+        $query = "UPDATE " . Player::$DBTable_name . " SET cards = ? WHERE id = ?";
         $stmt = $this->conn->prepare($query);
-        if ($stmt->execute())
-            return true;
-        return false;
+        $stmt->bind_param('si',$cards, $this->id);
+
+        if (!$stmt->execute())
+            throw new GameException("Unable to update player with id: $this->id, $stmt->errno: $stmt->error",6);
     }
 
     /**
-     * Delete Player with id from class attributes
-     * @return bool
+     * @throws GameException
      */
     public function delete()
     {
         $query = "DELETE FROM " . Player::$DBTable_name . " WHERE id = $this->id";
-
         // prepare query statement
         $stmt = $this->conn->prepare($query);
-
         // execute query
-        if ($stmt->execute())
-            return true;
-        else return false;
+        if (!$stmt->execute())
+            throw new GameException("Unable to delete player with id: $this->id, $stmt->errno: $stmt->error", 14);
     }
 
     /**
@@ -161,7 +156,16 @@ class Player
     }
 
     /**
-     * id for table getter
+     * Id for table getter
+     * @return int|null
+     */
+    public function getIdTable()
+    {
+        return $this->id_table;
+    }
+
+    /**
+     * Id for table setter
      * @param int $idTable
      */
     public function setIdTable(int $idTable) : void

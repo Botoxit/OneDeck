@@ -19,33 +19,52 @@ include_once '../objects/Player.php';
 
 // get posted data
 $post = json_decode(file_get_contents("php://input"));
+
+try {
 // make sure data is not empty
-if (!empty($post->playerName) &&
-    !empty($post->tableId)) {
+    if (empty($post->playerName) || empty($post->tableId))
+        throw new GameException("Bad request, post data is missing", 8);
 
     $table = new Table();
-    if(!$table->readOne($post->tableId))
-        die(json_encode(array("status" => -1, "message" => "Unable to read table.")));
+    $table->readOne($post->tableId);
 
     $playerLimit = $table->getPlayersLimit();
-    if($playerLimit % 11 == 0)
+    if ($playerLimit % 11 == 0)
         die(json_encode(array("status" => 0, "message" => "Table is full!")));
 
     $player = new Player($post->playerName);
     $player->setIdTable($post->tableId);
-    if ($player->create() < 1)
-        die(json_encode(array("status" => 0, "message" => "Player creating failed!")));
+    $player->create();
 
     $playerLimit += 10;
     $table->setPlayersLimit($playerLimit);
-    if(!$table->update())
-        die(json_encode(array("status" => 0, "message" => "Unable to update game table.")));
+    $table->update();
 
     $conn = DataBase::getConnection();
     if (!$conn->commit())
-        die(json_encode(array('status' => -1, 'message' => "Unable to commit.")));
+        throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
     die(json_encode(array('status' => 1)));
-} else {
-    http_response_code(400);    // set response code - 400 bad request
-    die(json_encode(array("status" => -2, "message" => "Unable to join table. Data is incomplete.")));
+} catch (GameException $e) {
+    switch ($e->getCode()) {
+        case 1:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read player.")));
+        case 2:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read macao game data.")));
+        case 3:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update macao game data.")));
+        case 4:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to commit.")));
+        case 5:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read ready player.")));
+        case 6:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update player.")));
+        case 8:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Bad request, data is missing.")));
+        case 9:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "It's not your cards! YOU ARE A CHEATER!")));
+        case 10:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to create player")));
+        case 11:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to create table")));
+    }
 }

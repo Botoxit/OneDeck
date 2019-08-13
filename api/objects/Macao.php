@@ -180,6 +180,7 @@ class Macao extends Game
             }
         }
         shuffle($deck);
+        $this->setDeck($deck);
 
         $round = [];
         $players_list = $player->readAll($_SESSION['id_table']);

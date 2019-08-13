@@ -20,44 +20,56 @@ include_once '../objects/Player.php';
 $conn = DataBase::getConnection();
 $macao = new Macao();
 $player = new Player();
-
 // get posted data
-$data = json_decode(file_get_contents("php://input"));
+$post = json_decode(file_get_contents("php://input"));
 
-// make sure data is not empty
-if (!empty($data->cards)) {
-
-    if (count($data->cards) > 1 && !$_SESSION['deck'])
+try {
+    if (empty($post->cards))
+        throw new GameException("Bad request, post data is missing", 8);
+    if (count($post->cards) > 1 && !$_SESSION['deck'])
         die(json_encode(array('status' => 0, 'message' => "Decks is not allowed.")));
 
-    $macao->readOne($_SESSION['id_table']);
-    $player->readCurrent($macao->getRound());
+    $player->readOne($_SESSION['id_player']);
+    $macao->readOne($player->getIdTable());
 
-    if ($player->getId() != $_SESSION['id_player'])
+    if ($player->getId() != $macao->getRound())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn " . $_SESSION['id_player'] . ", is " . $player->getName() . " [" . $player->getId() . "] turn.")));
 
-    if (!$macao->checkCards($player, $data->cards))
+    if (!$macao->checkCards($player, $post->cards))//        throw new GameException("Cheater detected: id: " . $player->getId() . ", name: " . $player->getName(),9);
         die(json_encode(array('status' => 666, 'cards' => $player->getCards(), 'message' => "It's not your cards! YOU ARE A CHEATER!")));
 
-    if (!$macao->verify($data->cards))
+    if (!$macao->verify($post->cards))
         die(json_encode(array('status' => 0, 'message' => "This cards is not right.")));
 
     $win = false;
-    if ($player->removeCards($data->cards) == 0) {
+    if ($player->removeCards($post->cards) == 0) {
         $win = true;
         if (!isset($this->details['rank']))
-            $this->details['rank'] = array($_SESSION['id_player']);
-        else array_push($this->details['rank'], $_SESSION['id_player']);
+            $this->details['rank'] = array($player->getId());
+        else array_push($this->details['rank'], $player->getId());
     }
-
-    if (!$player->update())
-        die(json_encode(array('status' => -1, 'message' => "Unable to update player.")));
-    if (!$macao->update($win))
-        die(json_encode(array('status' => -1, 'message' => "Unable to update game table.")));
-    if ($conn->commit())
-        die(json_encode(array('status' => 1)));
-    die(json_encode(array('status' => -1, 'message' => "Unable to commit.")));
-} else {
-    http_response_code(400);// set response code - 400 bad request
-    die(json_encode(array("status" => -2, "message" => "Unable to verify cards. Data is incomplete.")));
+    $player->update();
+    $macao->update($win);
+    if (!$conn->commit())
+        throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
+    die(json_encode(array('status' => 1)));
+} catch (GameException $e) {
+    switch ($e->getCode()) {
+        case 1:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read player.")));
+        case 2:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read macao game data.")));
+        case 3:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update macao game data.")));
+        case 4:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to commit.")));
+        case 5:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read ready player.")));
+        case 6:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update player.")));
+        case 8:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Bad request, data is missing.")));
+        case 9:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "It's not your cards! YOU ARE A CHEATER!")));
+    }
 }

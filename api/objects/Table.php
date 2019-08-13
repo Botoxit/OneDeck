@@ -57,7 +57,7 @@ class Table
 
     /**
      * @param $id
-     * @return bool
+     * @throws GameException
      */
     public function readOne($id)
     {
@@ -74,14 +74,14 @@ class Table
             $this->game = $row['game'];
             $this->players_limit = $row['players_limit'];
             $this->rules = json_decode($row['rules']);
-            return true;
-        } else return false;
+        } else throw new GameException("Unable to read table with id: $id, $stmt->errno: $stmt->error", 15);
     }
 
     /**
      * @param int $fromTableId
      * @param int $count
-     * @return false|mysqli_result|string
+     * @return false|mysqli_result
+     * @throws GameException
      */
     public function readPaging(int $fromTableId, int $count)
     {
@@ -90,7 +90,7 @@ class Table
         $stmt->bind_param('ii', $fromTableId, $count);
         if ($stmt->execute())
             return $stmt->get_result();
-        else return $stmt->error;
+        else throw new GameException("Unable to read tables page with $count entry from $fromTableId, $stmt->errno: $stmt->error", 16);
     }
 
     public function search($from_table_id, $count, $name, $password, $game, $players_limit, $rules)
@@ -120,9 +120,10 @@ class Table
         else return $this->conn->error;
     }
 
+
     /**
-     * Create a new table, all table variables need to be filed.
-     * @return int => success = id | name already exist = 0 | other error = -1
+     * @return int
+     * @throws GameException
      */
     public function create()
     {
@@ -137,34 +138,34 @@ class Table
             return $this->id;
         } elseif ($stmt->errno == 1062)
             return 0;
-        return -1;
+        throw new GameException("Unable to create table, $stmt->errno: $stmt->error", 11);
     }
 
+    /**
+     * @throws GameException
+     */
     public function update()
     {
         $query = "UPDATE " . Table::$DBTable_name . " SET players_limit = ? , host = ? WHERE id = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param('iii', $this->players_limit, $this->host, $this->id);
 
-        if ($stmt->execute())
-            return true;
-        return false;
+        if (!$stmt->execute())
+            throw new GameException("Unable to update table with id: $this->id, $stmt->errno: $stmt->error", 12);
     }
 
     /**
-     * @return bool
+     * @throws GameException
      */
     public function deleteTable()
     {
-        $query = "DELETE FROM " . Table::$DBTable_name . " WHERE id = $this->id";
-
-        // prepare query statement
+        $query = "DELETE FROM " . Table::$DBTable_name . " WHERE id = ?";
         $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('i', $this->id);
 
         // execute query
-        if ($stmt->execute())
-            return true;
-        else return false;
+        if (!$stmt->execute())
+            throw new GameException("Unable to delete table with id: $this->id, $stmt->errno: $stmt->error", 13);
     }
 
     /**
@@ -181,5 +182,20 @@ class Table
     public function setPlayersLimit($players_limit): void
     {
         $this->players_limit = $players_limit;
+    }
+
+    /**
+     * @throws GameException
+     */
+    public function newHost()
+    {
+        $query = "SELECT * FROM " . Player::getTableName() . " WHERE id != ? and id_table = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('ii', $this->host, $this->id);
+
+        if ($stmt->execute()) {
+            $row = $stmt->fetch();
+            $this->host = $row['id'];
+        } else throw new GameException("Unable change host for table with id $this->id, $stmt->errno: $stmt->error", 17);
     }
 }

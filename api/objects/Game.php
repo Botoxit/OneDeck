@@ -8,7 +8,7 @@
 class Game
 {
     // database connection and table name
-    private static $DBTable_name = "table";
+    private static $DBTable_name = "game";
     protected $conn;
     // object properties
     private $id = 0;
@@ -17,6 +17,7 @@ class Game
     private $deck = [];
     private $details = [];
     private $host = "";
+    private $change_at = 0;
 
     public function __construct()
     {
@@ -24,14 +25,13 @@ class Game
     }
 
     /**
-     * Read game data for an id
      * @param $id
-     * @return bool
+     * @throws GameException
      */
     public function readOne($id)
     {
         // select all query
-        $query = "SELECT * FROM " . Game::$DBTable_name . " WHERE id = '$id'";
+        $query = "SELECT g.*, t.host FROM " . Game::$DBTable_name . " g JOIN " . Table::getTableName() . " t ON t.id = g.id WHERE id = '$id'";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -45,15 +45,14 @@ class Game
             $this->cards = json_decode($row['cards']);
             $this->round = json_decode($row['round']);
             $this->deck = json_decode($row['deck']);
+            $this->change_at = $row['change_at'];
             $this->host = $row['host'];
-            return true;
-        } else return false;
+        } else throw new GameException("Unable to read game data with id: $id, $stmt->errno: $stmt->error", 2);
     }
 
     /**
-     * Update game data from class attributes
-     * @param bool $macao (default false) true if a player remain without cards in hand
-     * @return bool
+     * @param bool $macao
+     * @throws GameException
      */
     public function update(bool $macao = false)
     {
@@ -64,13 +63,12 @@ class Game
         $round = json_encode($this->round);
         $deck = json_encode($this->deck);
         $details = json_encode($this->details);
-        $query = "UPDATE " . Game::$DBTable_name . " SET cards='$cards', round='$round', 
-            deck='$deck', details='$details'  WHERE id = '$this->id'";
-
+        $query = "UPDATE " . Game::$DBTable_name . " SET cards = ?, round = ?, deck = ?, details = ?  WHERE id = ?";
         $stmt = $this->conn->prepare($query);
-        if ($stmt->execute())
-            return true;
-        return false;
+        $stmt->bind_param('ssssi', $cards, $round, $deck, $details, $this->id);
+
+        if (!$stmt->execute())
+            throw new GameException("Unable to update game data with id: $this->id, $stmt->errno: $stmt->error", 3);
     }
 
     /**
@@ -87,6 +85,19 @@ class Game
     public function getFirstTableCard()
     {
         return $this->cards[0];
+    }
+
+    /**
+     * Delete a player, put all cards at the end of deck and delete from round array
+     * @param Player $player
+     */
+    public function deletePlayer(Player $player)
+    {
+        array_push($this->deck, $player->getCards());
+        $key = array_search($player->getId(), $this->round);
+        if ($key >= 0) {
+            array_splice($this->round, $key, 1);
+        }
     }
 
     /**
@@ -122,7 +133,6 @@ class Game
     {
         return count($this->round);
     }
-
 
     /**
      * @param int $count

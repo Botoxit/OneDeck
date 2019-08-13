@@ -50,36 +50,53 @@ if (!empty($post->rules)) {
 } else $rules = null;
 
 $table = new Table();
-if (!$search) {
-    $result = $table->readPaging($start_id, 100);
-    if (is_string($result))
-        die(json_encode(array("status" => -1, "message" => "sql_exception " . $result)));
-    if (!$result)
-        die(json_encode(array("status" => -1, "message" => "Unable to read database.")));
-    $rowCount = $result->num_rows;
-} else {
-    $result = $table->search($start_id, 100, $name, $password, $game, $players_limit, $rules);
-    if (is_string($result))
-        die(json_encode(array("status" => -1, "message" => "sql_exception " . $result)));
-    if (!$result)
-        die(json_encode(array("status" => -1, "message" => "Unable to read database.")));
-    $rowCount = $result->num_rows;
-}
 
-$table_list = array();
-while ($row = $result->fetch_assoc()) {
-    $table_item = array(
-        "id" => $row['id'],
-        "name" => $row['name'],
-        "password" => $row['password'] == '' ? '' : 'X',
-        "game" => $row['game'],
-        "players_limit" => $row['players_limit'],
-        "rules" => json_decode($row['rules'])
-    );
-    array_push($table_list, $table_item);
-}
+try {
+    if (!$search)
+        $result = $table->readPaging($start_id, 100);
+    else $result = $table->search($start_id, 100, $name, $password, $game, $players_limit, $rules);
 
-http_response_code(200);    // set response code - 200 OK
-if (count($table_list) > 0)
-    die(json_encode(array('status' => 1, 'table' => $table_list)));
-die(json_encode(array('status' => 0)));
+    $rowCount = $result->num_rows;
+    $table_list = array();
+    while ($row = $result->fetch_assoc()) {
+        $table_item = array(
+            "id" => $row['id'],
+            "name" => $row['name'],
+            "password" => $row['password'] == '' ? '' : 'X',
+            "game" => $row['game'],
+            "players_limit" => $row['players_limit'],
+            "rules" => json_decode($row['rules'])
+        );
+        array_push($table_list, $table_item);
+    }
+    if (count($table_list) > 0)
+        die(json_encode(array('status' => 1, 'table' => $table_list)));
+    die(json_encode(array('status' => 0)));
+} catch (GameException $e) {
+    switch ($e->getCode()) {
+        case 1:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read player.")));
+        case 2:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read macao game data.")));
+        case 3:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update macao game data.")));
+        case 4:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to commit.")));
+        case 5:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read ready player.")));
+        case 6:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update player.")));
+        case 8:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Bad request, data is missing.")));
+        case 9:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "It's not your cards! YOU ARE A CHEATER!")));
+        case 10:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to create player")));
+        case 11:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to create table")));
+        case 15:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read table.")));
+        case 16:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read page.")));
+    }
+}
