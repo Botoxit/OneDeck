@@ -10,7 +10,6 @@ class Game
     // database connection and table name
     private static $DBTable_name = "table";
     protected $conn;
-
     // object properties
     private $id = 0;
     private $cards = [];
@@ -19,16 +18,13 @@ class Game
     private $details = [];
     private $host = "";
 
-    /**
-     * Player constructor.
-     * @param $database
-     */
-    public function __construct(mysqli $database)
+    public function __construct()
     {
-        $this->conn = $database;
+        $this->conn = DataBase::getConnection();
     }
 
     /**
+     * Read game data for an id
      * @param $id
      * @return bool
      */
@@ -54,25 +50,9 @@ class Game
         } else return false;
     }
 
-    public function readHost($id_table)
-    {
-        // select all query
-        $query = "SELECT host FROM " . Game::$DBTable_name . " WHERE id = '$id_table'";
-
-        // prepare query statement
-        $stmt = $this->conn->prepare($query);
-
-        // execute query
-        if ($stmt->execute()) {
-            // get retrieved row
-            $row = $stmt->fetch();
-            $this->host = $row['host'];
-            return true;
-        } else return false;
-    }
-
     /**
-     * @param bool $macao
+     * Update game data from class attributes
+     * @param bool $macao (default false) true if a player remain without cards in hand
      * @return bool
      */
     public function update(bool $macao = false)
@@ -91,14 +71,6 @@ class Game
         if ($stmt->execute())
             return true;
         return false;
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     /**

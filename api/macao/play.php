@@ -30,8 +30,9 @@ if($macao->readOne($_SESSION['id_table']))
 
 if($macao->getHost() == $_SESSION['id_player'])
 {
-    $query = "SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = '" . $_SESSION['id_table'] . "' AND JSON_EXTRACT(cards,'$.ready') = 'true'";
+    $query = "SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = ? AND JSON_EXTRACT(cards,'$.ready') = 'true'";
     $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $_SESSION['id_table']);
 
     if ($stmt->execute()) {
         $row = $stmt->fetch();

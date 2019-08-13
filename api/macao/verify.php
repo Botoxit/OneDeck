@@ -17,12 +17,9 @@ include_once '../config/DataBase.php';
 include_once '../objects/Macao.php';
 include_once '../objects/Player.php';
 
-// instantiate database and table object
-$database = new Database();
-$conn = $database->getConnection();
-
-$macao = new Macao($conn);
-$player = new Player($conn);
+$conn = DataBase::getConnection();
+$macao = new Macao();
+$player = new Player();
 
 // get posted data
 $data = json_decode(file_get_contents("php://input"));
@@ -60,12 +57,7 @@ if (!empty($data->cards)) {
     if ($conn->commit())
         die(json_encode(array('status' => 1)));
     die(json_encode(array('status' => -1, 'message' => "Unable to commit.")));
-} // tell the user data is incomplete
-else {
-
-    // set response code - 400 bad request
-    http_response_code(400);
-
-    // tell the user
+} else {
+    http_response_code(400);// set response code - 400 bad request
     die(json_encode(array("status" => -2, "message" => "Unable to verify cards. Data is incomplete.")));
 }

@@ -10,65 +10,41 @@ class Player
     // database connection and table name
     private static $DBTable_name = "player";
     private $conn;
-
     // object properties
     private $id = 0;
     private $id_table = null;
     private $name = "Player";
     private $cards;
 
-    public function __construct(string $newName)
+    /**
+     * Player constructor.
+     * @param string $newName (default 'Player')
+     */
+    public function __construct(string $newName = "Player")
     {
         $this->name = $newName;
-        $conn = DataBase::getConnection();
+        $this->conn = DataBase::getConnection();
     }
 
+    /**
+     * Get database table name for Players
+     * @return string
+     */
     public static function getTableName(): string
     {
         return Player::$DBTable_name;
     }
 
+    /**
+     * Read from database player data for an id
+     * @param $id
+     * @return bool
+     */
     public function readOne($id)
     {
         $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id = '$id'";
         $stmt = $this->conn->prepare($query);
 
-        // execute query
-        if ($stmt->execute()) {
-            // get retrieved row
-            $row = $stmt->fetch();
-
-            $this->id = $row['id'];
-            $this->id_table = $row['id_table'];
-            $this->name = $row['name'];
-            $this->cards = json_decode($row['cards']);
-            return true;
-        } else return false;
-    }
-
-    public function readAll($id_table)
-    {
-        // select all query
-        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id_table = '$id_table'";
-
-        // prepare query statement
-        $result = $this->conn->query($query);
-
-        // execute query
-        if ($result)
-            return $result;
-        else return $this->conn->error;
-    }
-
-    public function readCurrent($id_player)
-    {
-        // select all query
-        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id = $id_player";
-
-        // prepare query statement
-        $stmt = $this->conn->prepare($query);
-
-        // execute query
         if ($stmt->execute()) {
             // get retrieved row
             $row = $stmt->fetch();
@@ -82,13 +58,29 @@ class Player
     }
 
     /**
-     * @return int
+     * Read all player from a table
+     * @param $id_table
+     * @return int|mysqli_result
+     */
+    public function readAll($id_table)
+    {
+        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id_table = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('i',$id_table);
+
+        if ($stmt->execute())
+            return $stmt->get_result();
+        else return $stmt->errno;
+    }
+
+    /**
+     * Create new Player with class attributes
+     * @return int (player id or -1 for fail)
      */
     public function create()
     {
-        $conn = DataBase::getConnection();
         $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, ?, ?, '{}')";
-        $stmt = $conn->prepare($query);
+        $stmt = $this->conn->prepare($query);
         $stmt->bind_param('is', $this->id_table, $this->name);
 
         if ($stmt->execute()) {
@@ -97,6 +89,10 @@ class Player
         } else return -1;
     }
 
+    /**
+     * Update Player with class attributes
+     * @return bool
+     */
     public function update()
     {
         $cards = json_encode($this->cards);
@@ -108,6 +104,10 @@ class Player
         return false;
     }
 
+    /**
+     * Delete Player with id from class attributes
+     * @return bool
+     */
     public function delete()
     {
         $query = "DELETE FROM " . Player::$DBTable_name . " WHERE id = $this->id";
@@ -121,6 +121,11 @@ class Player
         else return false;
     }
 
+    /**
+     * Check if Player really have $cards in his hand
+     * @param array $cards
+     * @return bool
+     */
     public function checkCards(array $cards)
     {
         foreach ($cards as $card) {
@@ -130,6 +135,10 @@ class Player
         return true;
     }
 
+    /**
+     * Set if a Player is ready or not.
+     * @return bool
+     */
     public function ready()
     {
         if (!isset($this->cards['ready'])) {
@@ -143,6 +152,7 @@ class Player
     }
 
     /**
+     * Id getter
      * @return int
      */
     public function getId()
@@ -151,6 +161,7 @@ class Player
     }
 
     /**
+     * id for table getter
      * @param int $idTable
      */
     public function setIdTable(int $idTable) : void
@@ -159,6 +170,7 @@ class Player
     }
 
     /**
+     * Player name getter
      * @return string
      */
     public function getName()
@@ -167,6 +179,7 @@ class Player
     }
 
     /**
+     * Player cards getter
      * @return mixed
      */
     public function getCards()
@@ -174,16 +187,29 @@ class Player
         return $this->cards;
     }
 
+    /**
+     * Add cards in Player hand (when player get cards)
+     * @param array $cards
+     */
     public function addCards(array $cards)
     {
         $this->cards = array_merge($this->cards, $cards);
     }
 
+    /**
+     * Player cards setter
+     * @param array $cards
+     */
     public function setCards(array $cards)
     {
         $this->cards = $cards;
     }
 
+    /**
+     * Remove cards from Player hand (when player use cards)
+     * @param array $cards
+     * @return int
+     */
     public function removeCards(array $cards)
     {
         $this->cards = array_diff($this->cards, $cards);

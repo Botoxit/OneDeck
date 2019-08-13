@@ -17,12 +17,9 @@ include_once '../config/DataBase.php';
 include_once '../objects/Macao.php';
 include_once '../objects/Player.php';
 
-// instantiate database and table object
-$database = new Database();
-$conn = $database->getConnection();
-
-$macao = new Macao($conn);
-$player = new Player($conn);
+$conn = DataBase::getConnection();
+$macao = new Macao();
+$player = new Player();
 
 $macao->readOne($_SESSION['id_table']);
 $player->readCurrent($macao->getRound());

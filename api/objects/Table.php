@@ -19,9 +19,21 @@ class Table
     private $rules;
     private $host;
 
+    /**
+     * Table constructor.
+     */
     public function __construct()
     {
         $this->conn = DataBase::getConnection();
+    }
+
+    /**
+     * Get database table for Table list
+     * @return string
+     */
+    public static function getTableName(): string
+    {
+        return Table::$DBTable_name;
     }
 
     /**
@@ -43,11 +55,6 @@ class Table
         $this->host = $newHost;
     }
 
-    public static function getTableName(): string
-    {
-        return Table::$DBTable_name;
-    }
-
     /**
      * @param $id
      * @return bool
@@ -61,7 +68,6 @@ class Table
 
         if ($stmt->execute()) {
             $row = $stmt->fetch();
-
             $this->id = $row['id'];
             $this->name = $row['name'];
             $this->password = $row['password'];
@@ -82,7 +88,6 @@ class Table
         $query = "SELECT * FROM " . Table::$DBTable_name . " LIMIT ?, ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param('ii', $fromTableId, $count);
-
         if ($stmt->execute())
             return $stmt->get_result();
         else return $stmt->error;
@@ -91,7 +96,6 @@ class Table
     public function search($from_table_id, $count, $name, $password, $game, $players_limit, $rules)
     {
         $query = "SELECT * FROM " . Table::$DBTable_name . " WHERE";
-
         if (!empty($name))
             $query = $query . " `name` = '" . $name . "'";
         if (!empty($password))
@@ -108,14 +112,9 @@ class Table
             $rules = json_encode($rules);
             $query = $query . " AND `rules` = '" . $rules . "'";
         }
-
         $query = $query . " LIMIT $from_table_id, $count";
         $query = str_replace("WHERE AND", "WHERE", $query);
-
-        // prepare query statement
         $result = $this->conn->query($query);
-
-        // execute query
         if ($result)
             return $result;
         else return $this->conn->error;
@@ -168,23 +167,6 @@ class Table
         else return false;
     }
 
-
-    /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @return string
-     */
-    public function getGame(): string
-    {
-        return $this->game;
-    }
-
     /**
      * @return int
      */
@@ -199,21 +181,5 @@ class Table
     public function setPlayersLimit($players_limit): void
     {
         $this->players_limit = $players_limit;
-    }
-
-    /**
-     * @return array
-     */
-    public function getRules(): array
-    {
-        return $this->rules;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getHost()
-    {
-        return $this->host;
     }
 }
