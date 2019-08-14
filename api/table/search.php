@@ -98,5 +98,7 @@ try {
             die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read table.")));
         case 16:
             die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read page.")));
+        case 18:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to search tables.")));
     }
 }

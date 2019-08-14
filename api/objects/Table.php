@@ -117,7 +117,7 @@ class Table
         $result = $this->conn->query($query);
         if ($result)
             return $result;
-        else return $this->conn->error;
+        else throw new GameException("Unable to search tables", 18);
     }
 
 
