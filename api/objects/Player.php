@@ -45,13 +45,15 @@ class Player
         $stmt = $this->conn->prepare($query);
 
         if ($stmt->execute()) {
-            // get retrieved row
-            $row = $stmt->fetch();
+            $result = $stmt->get_result();
+            if (!$result)
+                throw new GameException("Player with id $id don't exist in database.", 19);
+            $row = $result->fetch_assoc();
 
             $this->id = $row['id'];
             $this->id_table = $row['id_table'];
             $this->name = $row['name'];
-            $this->cards = json_decode($row['cards']);
+            $this->cards = json_decode($row['cards'], true);
         } else throw new GameException("Unable to read player with id $id, $stmt->errno: $stmt->error", 1);
     }
 
@@ -65,7 +67,7 @@ class Player
     {
         $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id_table = ?";
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('i',$id_table);
+        $stmt->bind_param('i', $id_table);
 
         if ($stmt->execute())
             return $stmt->get_result();
@@ -95,12 +97,13 @@ class Player
     public function update()
     {
         $cards = json_encode($this->cards);
-        $query = "UPDATE " . Player::$DBTable_name . " SET cards = ? WHERE id = ?";
+        if($cards == null) $cards = "{}";
+        $query = "UPDATE " . Player::$DBTable_name . " SET id_table = ?, cards = ? WHERE id = ?";
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('si',$cards, $this->id);
+        $stmt->bind_param('isi', $this->id_table, $cards, $this->id);
 
         if (!$stmt->execute())
-            throw new GameException("Unable to update player with id: $this->id, $stmt->errno: $stmt->error",6);
+            throw new GameException("Unable to update player with id: $this->id, $stmt->errno: $stmt->error", 6);
     }
 
     /**
@@ -168,7 +171,7 @@ class Player
      * Id for table setter
      * @param int $idTable
      */
-    public function setIdTable(int $idTable) : void
+    public function setIdTable(int $idTable): void
     {
         $this->id_table = $idTable;
     }

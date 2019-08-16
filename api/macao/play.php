@@ -14,6 +14,7 @@ header('Content-Type: application/json');
 
 // include database and object files
 include_once '../config/DataBase.php';
+include_once '../objects/Table.php';
 include_once '../objects/Macao.php';
 include_once '../objects/Player.php';
 
@@ -27,12 +28,14 @@ try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable());
     if ($macao->getHost() == $player->getId()) {
-        $query = "SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = ? AND JSON_EXTRACT(cards,'$.ready') = 'true'";
+        $query = "SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = " . $player->getIdTable() . " AND JSON_EXTRACT(cards,'$.ready') = 'true'";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param('i', $player->getIdTable());
 
         if ($stmt->execute()) {
-            $row = $stmt->fetch();
+            $result = $stmt->get_result();
+            if(!$result)
+                throw new GameException("Players for table with id " . $player->getIdTable() . " don't exist in database.", 19);
+            $row = $result->fetch_assoc();
             $ready_player = $row['count(*)'];
             if ($ready_player == $macao->getPlayerCount()) {
                 $macao->new_game($player);

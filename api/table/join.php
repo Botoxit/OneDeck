@@ -66,5 +66,7 @@ try {
             die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to create player")));
         case 11:
             die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to create table")));
+        case 12:
+            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update table")));
     }
 }

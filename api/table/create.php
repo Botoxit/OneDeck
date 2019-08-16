@@ -22,7 +22,7 @@ $post = json_decode(file_get_contents("php://input"));
 try {
 // make sure data is not empty
     if (empty($post->playerName) || empty($post->tableName) || empty($post->game) ||
-        empty($post->playerLimit) || empty($post->rules))
+        empty($post->playersLimit) || empty($post->rules))
         throw new GameException("Bad request, post data is missing", 8);
 
     $player = new Player($post->playerName);
@@ -39,6 +39,8 @@ try {
     if ($idTable == 0) {
         die(json_encode(array("status" => 0, "message" => "Name already used.")));
     } elseif ($idTable > 0) {
+        $player->setIdTable($idTable);
+        $player->update();
         $conn = DataBase::getConnection();
         if (!$conn->commit())
             throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);

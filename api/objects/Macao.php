@@ -169,6 +169,10 @@ class Macao extends Game
         return false;
     }
 
+    /**
+     * @param Player $player
+     * @throws GameException
+     */
     public function new_game(Player $player)
     {
         $deck = array(5, 6);
@@ -183,7 +187,7 @@ class Macao extends Game
         $this->setDeck($deck);
 
         $round = [];
-        $players_list = $player->readAll($_SESSION['id_table']);
+        $players_list = $player->readAll($player->getIdTable());
         if (!$players_list)
             die(json_encode(array("status" => -1, "message" => "Unable to read players.")));
         while ($row = $players_list->fetch_assoc()) {

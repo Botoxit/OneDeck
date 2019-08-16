@@ -4,7 +4,7 @@
  * Date: 14.04.2019
  * Time: 18:20
  */
-
+include_once '../config/GameException.php';
 class Table
 {
     // database connection and table name
@@ -39,13 +39,13 @@ class Table
     /**
      * Table parameter setter
      * @param string $newName
-     * @param string $newPassword
+     * @param string|null $newPassword
      * @param string $newGame
      * @param int $newPlayerLimit
      * @param array $newRules
      * @param int $newHost
      */
-    public function setter(string $newName, string $newPassword, string $newGame, int $newPlayerLimit, array $newRules, int $newHost)
+    public function setter(string $newName, $newPassword, string $newGame, int $newPlayerLimit, array $newRules, int $newHost)
     {
         $this->name = $newName;
         $this->password = $newPassword;
@@ -67,13 +67,17 @@ class Table
         $stmt->bind_param('i', $id);
 
         if ($stmt->execute()) {
-            $row = $stmt->fetch();
+            $result = $stmt->get_result();
+            if(!$result)
+                throw new GameException("Table with id $id don't exist in database.", 19);
+            $row = $result->fetch_assoc();
             $this->id = $row['id'];
             $this->name = $row['name'];
             $this->password = $row['password'];
             $this->game = $row['game'];
             $this->players_limit = $row['players_limit'];
             $this->rules = json_decode($row['rules']);
+            $this->host = $row['host'];
         } else throw new GameException("Unable to read table with id: $id, $stmt->errno: $stmt->error", 15);
     }
 
@@ -93,6 +97,17 @@ class Table
         else throw new GameException("Unable to read tables page with $count entry from $fromTableId, $stmt->errno: $stmt->error", 16);
     }
 
+    /**
+     * @param $from_table_id
+     * @param $count
+     * @param $name
+     * @param $password
+     * @param $game
+     * @param $players_limit
+     * @param $rules
+     * @return bool|mysqli_result
+     * @throws GameException
+     */
     public function search($from_table_id, $count, $name, $password, $game, $players_limit, $rules)
     {
         $query = "SELECT * FROM " . Table::$DBTable_name . " WHERE";
@@ -171,7 +186,7 @@ class Table
     /**
      * @return int
      */
-    public function getPlayersLimit(): int
+    public function getPlayersLimit() : int
     {
         return $this->players_limit;
     }

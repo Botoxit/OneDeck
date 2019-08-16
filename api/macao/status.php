@@ -14,6 +14,7 @@ header('Content-Type: application/json');
 
 // include database and object files
 include_once '../config/DataBase.php';
+include_once '../objects/Table.php';
 include_once '../objects/Macao.php';
 include_once '../objects/Player.php';
 
@@ -24,7 +25,9 @@ $player = new Player();
 try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable());
-    $players_list = $player->readAll($_SESSION['id_table']);
+    $players_list = $player->readAll($player->getIdTable());
+    if(!$players_list)
+        throw new GameException("Players list for table with id " . $player->getIdTable() . " don't exist in database.", 19);
 
     $result = array();
     $result['cards'] = array_slice($macao->getCards(), 0, 10);
@@ -37,7 +40,7 @@ try {
 
     while ($row = $players_list->fetch_assoc()) {
         $i = $i + 1;
-        $player_cards = json_decode($row['cards']);
+        $player_cards = json_decode($row['cards'], true);
         if ($row['id'] != $_SESSION['id_player']) {
             $table_item = array(
                 "id" => 0,
@@ -72,6 +75,8 @@ try {
         $result['players'] = array_merge($result['players'], $players_slice);
     }
 // carti de pe masa, carti jucatori, runda, detalii
+
+    die(json_encode($result));
 } catch (GameException $e) {
     switch ($e->getCode()) {
         case 1:

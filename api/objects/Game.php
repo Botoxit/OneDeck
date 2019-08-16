@@ -31,20 +31,20 @@ class Game
     public function readOne($id)
     {
         // select all query
-        $query = "SELECT g.*, t.host FROM " . Game::$DBTable_name . " g JOIN " . Table::getTableName() . " t ON t.id = g.id WHERE id = '$id'";
-
-        // prepare query statement
+        $query = "SELECT g.*, t.host FROM " . Game::$DBTable_name . " g JOIN " . Table::getTableName() . " t ON t.id = g.id WHERE g.id = ?";
         $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('i', $id);
 
-        // execute query
         if ($stmt->execute()) {
-            // get retrieved row
-            $row = $stmt->fetch();
+            $result = $stmt->get_result();
+            if (!$result)
+                throw new GameException("Game data with id $id don't exist in database.", 19);
+            $row = $result->fetch_assoc();
 
             $this->id = $row['id'];
-            $this->cards = json_decode($row['cards']);
-            $this->round = json_decode($row['round']);
-            $this->deck = json_decode($row['deck']);
+            $this->cards = json_decode($row['cards'], true);
+            $this->round = json_decode($row['round'], true);
+            $this->deck = json_decode($row['deck'], true);
             $this->change_at = $row['change_at'];
             $this->host = $row['host'];
         } else throw new GameException("Unable to read game data with id: $id, $stmt->errno: $stmt->error", 2);
