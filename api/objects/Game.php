@@ -45,6 +45,7 @@ class Game
             $this->cards = json_decode($row['cards'], true);
             $this->round = json_decode($row['round'], true);
             $this->deck = json_decode($row['deck'], true);
+            $this->details = json_decode($row['details'], true);
             $this->change_at = $row['change_at'];
             $this->host = $row['host'];
         } else throw new GameException("Unable to read game data with id: $id, $stmt->errno: $stmt->error", 2);
@@ -102,11 +103,10 @@ class Game
 
     /**
      * @param array $cards
-     * @return int
      */
-    protected function addCards(array $cards): int
+    protected function addCards(array $cards)
     {
-        return array_unshift($this->cards, $cards);
+        $this->cards = array_merge($cards,$this->cards);
     }
 
     protected function setDeck(array $deck)

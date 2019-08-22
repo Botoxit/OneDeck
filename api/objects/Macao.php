@@ -178,10 +178,8 @@ class Macao extends Game
         $deck = array(5, 6);
         for ($i = 1; $i < 14; $i++) {
             $num = $i * 10;
-            for ($j = 1; $j < 5; $j++) {
-                $num = $num + $j;
-                array_push($deck, $num);
-            }
+            for ($j = 1; $j < 5; $j++)
+                array_push($deck, $num + $j);
         }
         shuffle($deck);
         $this->setDeck($deck);
@@ -210,6 +208,6 @@ class Macao extends Game
 
         $this->setRound($round);
         $this->setDetails(array('new_game' => $this->getPlayerCount()));
-        $this->addCards(array($this->takeCards(1)));
+        $this->addCards($this->takeCards(1));
     }
 }

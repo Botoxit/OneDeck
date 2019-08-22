@@ -50,7 +50,7 @@ try {
             if ($macao->getPlayerCount() < 2) {
                 if ($macao->getHost() == $row['id'])
                     $table_item['id'] = 2;
-                elseif (isset($player_cards['ready']) && $player_cards['ready'] = true)
+                elseif (isset($player_cards['ready']) && $player_cards['ready'] == true)
                     $table_item['id'] = 1;
             } elseif ($row['id'] == $macao->getRound()) {
                 $table_item['id'] = 1;
@@ -62,7 +62,7 @@ try {
             if ($macao->getPlayerCount() < 2) {
                 if ($macao->getHost() == $_SESSION['id_player']) {
                     $result['status'] = 2;
-                } elseif (isset($player_cards['ready']) && $player_cards['ready'] = true)
+                } elseif (isset($player_cards['ready']) && $player_cards['ready'] == true)
                     $result['status'] = 1;
             } elseif ($_SESSION['id_player'] == $macao->getRound())
                 $result['status'] = 1;

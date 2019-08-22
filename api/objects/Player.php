@@ -14,7 +14,7 @@ class Player
     private $id = 0;
     private $id_table = null;
     private $name = "Player";
-    private $cards;
+    private $cards = [];
 
     /**
      * Player constructor.
