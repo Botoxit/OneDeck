@@ -55,12 +55,14 @@ class Game
      * @param bool $macao
      * @throws GameException
      */
-    public function update(bool $macao = false)
+    public function update(bool $macao = false, bool $new_game = false)
     {
         $cards = json_encode($this->cards);
-        $current_player = array_splice($this->round, 0, 1);
-        if (!$macao)
-            array_push($this->round, $current_player);
+        if (!$new_game) {
+            $current_player = array_splice($this->round, 0, 1);
+            if (!$macao)
+                $this->round = array_merge($this->round, $current_player);
+        }
         $round = json_encode($this->round);
         $deck = json_encode($this->deck);
         $details = json_encode($this->details);
@@ -106,7 +108,7 @@ class Game
      */
     protected function addCards(array $cards)
     {
-        $this->cards = array_merge($cards,$this->cards);
+        $this->cards = array_merge($cards, $this->cards);
     }
 
     protected function setDeck(array $deck)

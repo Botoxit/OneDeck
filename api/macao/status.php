@@ -26,7 +26,7 @@ try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable());
     $players_list = $player->readAll($player->getIdTable());
-    if(!$players_list)
+    if (!$players_list)
         throw new GameException("Players list for table with id " . $player->getIdTable() . " don't exist in database.", 19);
 
     $result = array();
@@ -52,8 +52,9 @@ try {
                     $table_item['id'] = 2;
                 elseif (isset($player_cards['ready']) && $player_cards['ready'] == true)
                     $table_item['id'] = 1;
-            } elseif ($row['id'] == $macao->getRound()) {
-                $table_item['id'] = 1;
+            } else {
+                if ($row['id'] == $macao->getRound())
+                    $table_item['id'] = 1;
                 $table_item['cards'] = count($player_cards);
             }
             array_push($result['players'], $table_item);

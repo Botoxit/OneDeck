@@ -31,21 +31,23 @@ try {
             throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
         die(json_encode(array('status' => 1)));
     }
-
-    $playerLimit -= 10;
+    $table = new Table();
+    $table->readOne($id_table);
+    $playerLimit = $table->getPlayersLimit() - 10;
     if ($playerLimit < 10) {
         $table->deleteTable();
+        $player->delete();
     } else {
         $game = new Game();
         $game->readOne($player->getIdTable());
         $game->deletePlayer($player);
         $game->update();
 
-        $table = new Table();
-        $table->readOne($player->getIdTable());
         $table->setPlayersLimit($playerLimit);
-        $table->newHost();
+        if ($game->getHost() == $player->getId())
+            $table->newHost();
         $table->update();
+        $player->delete();
     }
 
     if (!$conn->commit())
