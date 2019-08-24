@@ -24,25 +24,26 @@ $player = new Player();
 $post = json_decode(file_get_contents("php://input"));
 
 try {
-    if (empty($post->cards))
+    if (empty($post))
         throw new GameException("Bad request, post data is missing", 8);
-    if (count($post->cards) > 1 && !$_SESSION['deck'])
+    $player->readOne($_SESSION['id_player']);
+    $macao->readOne($player->getIdTable(), true);
+    $rules = $macao->getRules();
+    if (count($post) > 1 && !$rules['deck'])
         die(json_encode(array('status' => 0, 'message' => "Decks is not allowed.")));
 
-    $player->readOne($_SESSION['id_player']);
-    $macao->readOne($player->getIdTable());
 
     if ($player->getId() != $macao->getRound())
-        die(json_encode(array('status' => 0, 'message' => "Is not your turn " . $_SESSION['id_player'] . ", is " . $player->getName() . " [" . $player->getId() . "] turn.")));
+        die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
 
-    if (!$macao->checkCards($player, $post->cards))//        throw new GameException("Cheater detected: id: " . $player->getId() . ", name: " . $player->getName(),9);
+    if (!$macao->checkCards($player, $post))//        throw new GameException("Cheater detected: id: " . $player->getId() . ", name: " . $player->getName(),9);
         die(json_encode(array('status' => 666, 'cards' => $player->getCards(), 'message' => "It's not your cards! YOU ARE A CHEATER!")));
 
-    if (!$macao->verify($post->cards))
+    if (!$macao->verify($post))
         die(json_encode(array('status' => 0, 'message' => "This cards is not right.")));
 
     $win = false;
-    if ($player->removeCards($post->cards) == 0) {
+    if ($player->removeCards($post) == 0) {
         $win = true;
         if (!isset($this->details['rank']))
             $this->details['rank'] = array($player->getId());

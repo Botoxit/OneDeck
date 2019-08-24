@@ -9,10 +9,12 @@ include_once 'Player.php';
 
 class Macao extends Game
 {
+    // {"takeCards_color":0,"waitCard":4,"waitCard_color":1,"changeSymbol":1,"changeSymbol_color":0,"stopCard":7,"stopCard_color":0,"deck":1,"stop_wait":1}
     public function verify(array $cards, $symbol = 0)
     {
         $tableCard = $this->getFirstTableCard();
         $details = $this->getDetails();
+        $rules = $this->getRules();
 
         if (!empty($details['changeSymbol'])) {
             $tableSymbol = $details['changeSymbol'];
@@ -21,18 +23,18 @@ class Macao extends Game
 
         // If I need to take cards
         if (!empty($details['takeCard'])) {
-            if ((intdiv($cards[0], 10) == intdiv($tableCard, 10)) || ($tableCard > 4 && $cards[0] > 4)) {
-                if ($cards[0] == 5 || $cards[0] == 6) {
-                    $takeCards = 5 + (5 * ($cards[0] % 2));
-                } else $takeCards = intdiv($cards[0], 10) * count($cards);
-
-                $details['takeCard'] = $details['takeCard'] + $takeCards;
-                $this->setDetails($details);
-                $this->addCards($cards);
-                return true;
-            }
+//            if ((intdiv($cards[0], 10) == intdiv($tableCard, 10)) || ($tableCard > 4 && $cards[0] > 4)) {
+//                if ($cards[0] == 5 || $cards[0] == 6) {
+//                    $takeCards = 5 + (5 * ($cards[0] % 2));
+//                } else $takeCards = intdiv($cards[0], 10) * count($cards);
+//
+//                $details['takeCard'] = $details['takeCard'] + $takeCards;
+//                $this->setDetails($details);
+//                $this->addCards($cards);
+//                return true;
+//            }
             if (($cards[0] > 20 && $cards[0] < 40) || $cards[0] == 5 || $cards[0] == 6) {
-                if ($_SESSION['takeCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
+                if ($rules['takeCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
                 if ($cards[0] == 5 || $cards[0] == 6) {
                     if (count($cards) == 2)
@@ -44,7 +46,7 @@ class Macao extends Game
                 $this->addCards($cards);
                 return true;
             }
-            if (!$this->checkStop($cards, $tableSymbol))
+            if (!$this->checkStop($rules, $cards, $tableSymbol))
                 return false;
             unset($details['takeCard']);
             $this->setDetails($details);
@@ -54,15 +56,15 @@ class Macao extends Game
 
         // If I need to wait
         if (!empty($details['wait'])) {
-            if (intdiv($cards[0], 10) == $_SESSION['waitCard']) {
-                if ($_SESSION['waitCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
+            if (intdiv($cards[0], 10) == $rules['waitCard']) {
+                if ($rules['waitCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
                 $details['wait'] = $details['wait'] + count($cards);
                 $this->setDetails($details);
                 $this->addCards($cards);
                 return true;
             }
-            if (!$this->checkStop($cards, $tableSymbol))
+            if (!$rules['stop_wait'] || !$this->checkStop($rules, $cards, $tableSymbol))
                 return false;
             unset($details['wait']);
             $this->setDetails($details);
@@ -72,8 +74,8 @@ class Macao extends Game
 
 
         if ((($cards[0] > 20) && ($cards[0] < 40)) || $cards[0] == 5 || $cards[0] == 6) {
-            if ((intdiv($cards[0], 10) != intdiv($tableCard, 10)) || ($tableCard > 4 && $cards[0] > 4)) {
-                if ($_SESSION['takeCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
+            if ((intdiv($cards[0], 10) != intdiv($tableCard, 10))){// || ($tableCard > 4 && $cards[0] > 4)) {
+                if ($rules['takeCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
             }
             if ($cards[0] == 5 || $cards[0] == 6) {
@@ -85,9 +87,9 @@ class Macao extends Game
             $this->setDetails($details);
             $this->addCards($cards);
             return true;
-        } elseif (intdiv($cards[0], 10) == $_SESSION["changeSymbol"]) {
-            if ($_SESSION["changeSymbol"] != intdiv($tableCard, 10)) {
-                if ($_SESSION['changeSymbol_color'] && !$this->checkSymbol($cards, $tableSymbol))
+        } elseif (intdiv($cards[0], 10) == $rules["changeSymbol"]) {
+            if ($rules["changeSymbol"] != intdiv($tableCard, 10)) {
+                if ($rules['changeSymbol_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
             }
             if ($symbol > 0)
@@ -95,18 +97,18 @@ class Macao extends Game
             $this->setDetails($details);
             $this->addCards($cards);
             return true;
-        } elseif (intdiv($cards[0], 10) == $_SESSION["waitCard"]) {
-            if ($_SESSION["waitCard"] != intdiv($tableCard, 10)) {
-                if ($_SESSION['waitCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
+        } elseif (intdiv($cards[0], 10) == $rules["waitCard"]) {
+            if ($rules["waitCard"] != intdiv($tableCard, 10)) {
+                if ($rules['waitCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
             }
             $details['wait'] = count($cards);
             $this->setDetails($details);
             $this->addCards($cards);
             return true;
-        } elseif ($_SESSION["stopCard"] > 0 && intdiv($cards[0], 10) == $_SESSION["stopCard"]) {
-            if ($_SESSION["stopCard"] != intdiv($tableCard, 10)) {
-                if ($_SESSION['stopCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
+        } elseif ($rules["stopCard"] > 0 && intdiv($cards[0], 10) == $rules["stopCard"]) {
+            if ($rules["stopCard"] != intdiv($tableCard, 10)) {
+                if ($rules['stopCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
             }
             $this->addCards($cards);
@@ -120,10 +122,10 @@ class Macao extends Game
         return true;
     }
 
-    private function checkStop($cards, $tableSymbol)
+    private function checkStop($rules, $cards, $tableSymbol)
     {
-        if ($_SESSION["stopCard"] > 0 && intdiv($cards[0], 10) == $_SESSION["stopCard"]) {
-            if (!$_SESSION['stopCard_color'])
+        if ($rules["stopCard"] > 0 && intdiv($cards[0], 10) == $rules["stopCard"]) {
+            if (!$rules['stopCard_color'])
                 return true;
             return $this->checkSymbol($cards, $tableSymbol);
         }

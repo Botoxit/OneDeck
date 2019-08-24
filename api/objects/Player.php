@@ -97,7 +97,7 @@ class Player
     public function update()
     {
         $cards = json_encode($this->cards);
-        if($cards == null) $cards = "{}";
+        if ($cards == null) $cards = "{}";
         $query = "UPDATE " . Player::$DBTable_name . " SET id_table = ?, cards = ? WHERE id = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param('isi', $this->id_table, $cards, $this->id);
@@ -127,7 +127,7 @@ class Player
     public function checkCards(array $cards)
     {
         foreach ($cards as $card) {
-            if (!in_array($this->cards, $card))
+            if (!in_array($card, $this->cards))
                 return false;
         }
         return true;

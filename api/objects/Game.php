@@ -5,6 +5,8 @@
  * Time: 20:25
  */
 
+include_once 'Table.php';
+
 class Game
 {
     // database connection and table name
@@ -16,8 +18,9 @@ class Game
     private $round = [];
     private $deck = [];
     private $details = [];
-    private $host = "";
     private $change_at = 0;
+    private $rules = [];
+    private $host = "";
 
     public function __construct()
     {
@@ -26,12 +29,15 @@ class Game
 
     /**
      * @param $id
+     * @param bool $read_rules
      * @throws GameException
      */
-    public function readOne($id)
+    public function readOne($id, bool $read_rules = false)
     {
         // select all query
-        $query = "SELECT g.*, t.host FROM " . Game::$DBTable_name . " g JOIN " . Table::getTableName() . " t ON t.id = g.id WHERE g.id = ?";
+        $query = "SELECT g.*, ";
+        if($read_rules) $query .= "t.rules, ";
+        $query .= "t.host FROM " . Game::$DBTable_name . " g JOIN " . Table::getTableName() . " t ON t.id = g.id WHERE g.id = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param('i', $id);
 
@@ -46,6 +52,7 @@ class Game
             $this->round = json_decode($row['round'], true);
             $this->deck = json_decode($row['deck'], true);
             $this->change_at = $row['change_at'];
+            $this->rules = json_decode($row['rules'], true);
             $this->host = $row['host'];
         } else throw new GameException("Unable to read game data with id: $id, $stmt->errno: $stmt->error", 2);
     }
@@ -98,6 +105,14 @@ class Game
         if ($key >= 0) {
             array_splice($this->round, $key, 1);
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function getRules(): array
+    {
+        return $this->rules;
     }
 
     /**
