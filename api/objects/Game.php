@@ -51,6 +51,7 @@ class Game
             $this->cards = json_decode($row['cards'], true);
             $this->round = json_decode($row['round'], true);
             $this->deck = json_decode($row['deck'], true);
+            $this->details = json_decode($row['details'], true);
             $this->change_at = $row['change_at'];
             $this->rules = json_decode($row['rules'], true);
             $this->host = $row['host'];
@@ -61,12 +62,14 @@ class Game
      * @param bool $macao
      * @throws GameException
      */
-    public function update(bool $macao = false)
+    public function update(bool $macao = false, bool $new_game = false)
     {
         $cards = json_encode($this->cards);
-        $current_player = array_splice($this->round, 0, 1);
-        if (!$macao)
-            array_push($this->round, $current_player);
+        if (!$new_game) {
+            $current_player = array_splice($this->round, 0, 1);
+            if (!$macao)
+                $this->round = array_merge($this->round, $current_player);
+        }
         $round = json_encode($this->round);
         $deck = json_encode($this->deck);
         $details = json_encode($this->details);
@@ -117,11 +120,10 @@ class Game
 
     /**
      * @param array $cards
-     * @return int
      */
-    protected function addCards(array $cards): int
+    protected function addCards(array $cards)
     {
-        return array_unshift($this->cards, $cards);
+        $this->cards = array_merge($cards, $this->cards);
     }
 
     protected function setDeck(array $deck)

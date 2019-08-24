@@ -28,28 +28,30 @@ try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable());
     if ($macao->getHost() == $player->getId()) {
-        $query = "SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = " . $player->getIdTable() . " AND JSON_EXTRACT(cards,'$.ready') = 'true'";
+        $query = "SELECT count(*) as \"ready\" , (SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = " . $player->getIdTable() . ") as \"total\" 
+                            FROM " . Player::getTableName() . " WHERE id_table = " . $player->getIdTable() . " AND JSON_EXTRACT(cards,'$.ready') = true";
         $stmt = $conn->prepare($query);
 
-        if ($stmt->execute()) {
-            $result = $stmt->get_result();
-            if(!$result)
-                throw new GameException("Players for table with id " . $player->getIdTable() . " don't exist in database.", 19);
-            $row = $result->fetch_assoc();
-            $ready_player = $row['count(*)'];
-            if ($ready_player == $macao->getPlayerCount()) {
-                $macao->new_game($player);
-                $macao->update();
-                if (!$conn->commit())
-                    throw new GameException("Commit work failed, $conn->errno: $conn->error",4);
-                die(json_encode(array('status' => 1)));
-            } else die(json_encode(array('status' => 0)));
-        } else throw new GameException("Unable to read ready players for table id: " . $player->getIdTable() . ", $stmt->errno: $stmt->error",5);
+        if (!$stmt->execute())
+            throw new GameException("Unable to read ready players for table id: " . $player->getIdTable() . ", $stmt->errno: $stmt->error", 5);
+        $result = $stmt->get_result();
+        if (!$result)
+            throw new GameException("Players for table with id " . $player->getIdTable() . " don't exist in database.", 19);
+        $row = $result->fetch_assoc();
+        $ready_players = $row['ready'] + 1;
+        $total_players = $row['total'];
+        if ($ready_players == $total_players && $total_players > 1) {
+            $macao->new_game($player);
+            $macao->update(false, false);
+            if (!$conn->commit())
+                throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
+            die(json_encode(array('status' => 1)));
+        } else die(json_encode(array('status' => 0)));
     } else {
         $ready = $player->ready();
         $player->update();
         if (!$conn->commit())
-            throw new GameException("Commit work failed, $conn->errno: $conn->error",4);
+            throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
         if ($ready)
             die(json_encode(array('status' => 1)));
         die(json_encode(array('status' => 0)));
