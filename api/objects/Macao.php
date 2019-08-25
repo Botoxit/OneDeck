@@ -22,7 +22,7 @@ class Macao extends Game
         } else $tableSymbol = $tableCard % 10;
 
         // If I need to take cards
-        if (!empty($details['takeCard'])) {
+        if (!empty($details['takeCards'])) {
 //            if ((intdiv($cards[0], 10) == intdiv($tableCard, 10)) || ($tableCard > 4 && $cards[0] > 4)) {
 //                if ($cards[0] == 5 || $cards[0] == 6) {
 //                    $takeCards = 5 + (5 * ($cards[0] % 2));
@@ -34,21 +34,21 @@ class Macao extends Game
 //                return true;
 //            }
             if (($cards[0] > 20 && $cards[0] < 40) || $cards[0] == 5 || $cards[0] == 6) {
-                if ($rules['takeCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
+                if ($rules['takeCards_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
                 if ($cards[0] == 5 || $cards[0] == 6) {
                     if (count($cards) == 2)
                         $takeCards = 15;
                     else $takeCards = 5 + (5 * ($cards[0] % 2));
                 } else $takeCards = intdiv($cards[0], 10) * count($cards);
-                $details['takeCard'] = $details['takeCard'] + $takeCards;
+                $details['takeCards'] = $details['takeCards'] + $takeCards;
                 $this->setDetails($details);
                 $this->addCards($cards);
                 return true;
             }
             if (!$this->checkStop($rules, $cards, $tableSymbol))
                 return false;
-            unset($details['takeCard']);
+            unset($details['takeCards']);
             $this->setDetails($details);
             $this->addCards($cards);
             return true;
@@ -75,7 +75,7 @@ class Macao extends Game
 
         if ((($cards[0] > 20) && ($cards[0] < 40)) || $cards[0] == 5 || $cards[0] == 6) {
             if ((intdiv($cards[0], 10) != intdiv($tableCard, 10))){// || ($tableCard > 4 && $cards[0] > 4)) {
-                if ($rules['takeCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
+                if ($rules['takeCards_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
             }
             if ($cards[0] == 5 || $cards[0] == 6) {
@@ -83,7 +83,7 @@ class Macao extends Game
                     $takeCards = 15;
                 else $takeCards = 5 + (5 * ($cards[0] % 2));
             } else $takeCards = intdiv($cards[0], 10) * count($cards);
-            $details['takeCard'] = $takeCards;
+            $details['takeCards'] = $takeCards;
             $this->setDetails($details);
             $this->addCards($cards);
             return true;

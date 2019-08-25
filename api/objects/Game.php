@@ -53,18 +53,20 @@ class Game
             $this->deck = json_decode($row['deck'], true);
             $this->details = json_decode($row['details'], true);
             $this->change_at = $row['change_at'];
-            $this->rules = json_decode($row['rules'], true);
+            if($read_rules) $this->rules = json_decode($row['rules'], true);
             $this->host = $row['host'];
         } else throw new GameException("Unable to read game data with id: $id, $stmt->errno: $stmt->error", 2);
     }
 
     /**
      * @param bool $macao
+     * @param bool $new_game
      * @throws GameException
      */
     public function update(bool $macao = false, bool $new_game = false)
     {
         $cards = json_encode($this->cards);
+
         if (!$new_game) {
             $current_player = array_splice($this->round, 0, 1);
             if (!$macao)

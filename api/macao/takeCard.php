@@ -36,11 +36,11 @@ try {
         $cards = $macao->takeCards(5);
         $details['new_game'] = $details['new_game'] - 1;
         $macao->setDetails($details);
-    } elseif (empty($details['takeCard']))
+    } elseif (empty($details['takeCards']))
         $cards = $macao->takeCards(1);
     else {
-        $cards = $macao->takeCards($details['takeCard']);
-        unset($details['takeCard']);
+        $cards = $macao->takeCards($details['takeCards']);
+        unset($details['takeCards']);
         $macao->setDetails($details);
     }
     $player->addCards($cards);

@@ -219,7 +219,7 @@ class Player
      */
     public function removeCards(array $cards)
     {
-        $this->cards = array_diff($this->cards, $cards);
+        $this->cards = array_values(array_diff($this->cards, $cards));
         return count($this->cards);
     }
 }
