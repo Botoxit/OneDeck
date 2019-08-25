@@ -25,7 +25,7 @@ try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable());
 
-    if ($player->getId() != $_SESSION['id_player'])
+    if ($macao->getRound() != $_SESSION['id_player'])
         die(json_encode(array('status' => 0, 'message' => "Is not your turn " . $_SESSION['id_player'] . ", is " . $player->getName() . " [" . $player->getId() . "] turn.")));
 
     $details = $macao->getDetails();
