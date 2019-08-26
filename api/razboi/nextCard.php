@@ -1,10 +1,4 @@
 <?php
-/**
- * User: Nicu Neculache
- * Date: 24.04.2019
- * Time: 00:19
- */
-
 // required headers
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: access");
@@ -14,36 +8,22 @@ header('Content-Type: application/json');
 
 // include database and object files
 include_once '../config/DataBase.php';
-include_once '../objects/Macao.php';
+include_once '../objects/Razboi.php';
 include_once '../objects/Player.php';
 
 $conn = DataBase::getConnection();
-$macao = new Macao();
+$razboi = new Razboi();
 $player = new Player();
 
 try {
     $player->readOne($_SESSION['id_player']);
-    $macao->readOne($player->getIdTable());
+    $razboi->readOne($player->getIdTable());
 
     if ($macao->getRound() != $player->getId())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
 
-    $details = $macao->getDetails();
-    if (!empty($details['wait']))
-        die(json_encode(array('status' => 0, 'message' => "You can't take card in this situation.")));
-
-    if (!empty($details['new_game']) && $details['new_game'] > 0) {
-        $cards = $macao->takeCards(5);
-        $details['new_game'] = $details['new_game'] - 1;
-        $macao->setDetails($details);
-    } elseif (empty($details['takeCards']))
-        $cards = $macao->takeCards(1);
-    else {
-        $cards = $macao->takeCards($details['takeCards']);
-        unset($details['takeCards']);
-        $macao->setDetails($details);
-    }
-    $player->addCards($cards);
+    $cards = $player->getCards();
+    $razboi->nextCard($cards[0]);
 
     $player->update();
     $macao->update();
@@ -66,3 +46,4 @@ try {
             die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update player.")));
     }
 }
+
