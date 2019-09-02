@@ -19,6 +19,7 @@ include_once '../objects/Player.php';
 
 // get posted data
 $post = json_decode(file_get_contents("php://input"));
+
 try {
 // make sure data is not empty
     if (empty($post->playerName) || empty($post->tableName) || empty($post->game) ||
@@ -32,7 +33,7 @@ try {
     if (!empty($post->password))
         $password = $post->password;
     $table = new Table();
-    $table->setter($post->tableName, $password, $post->game, $post->playersLimit, $post->rules, $player->getId());
+    $table->setter($post->tableName, $password, $post->game, $post->playersLimit, (array)$post->rules, $player->getId());
 
     $idTable = $table->create();
 

@@ -61,10 +61,10 @@ try {
     while ($row = $result->fetch_assoc()) {
         $table_item = array(
             "id" => $row['id'],
-            "name" => $row['name'],
+            "tableName" => $row['name'],
             "password" => $row['password'] == '' ? '' : 'X',
             "game" => $row['game'],
-            "players_limit" => $row['players_limit'],
+            "playersLimit" => $row['players_limit'],
             "rules" => json_decode($row['rules'])
         );
         array_push($table_list, $table_item);

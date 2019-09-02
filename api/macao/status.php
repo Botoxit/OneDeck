@@ -43,18 +43,18 @@ try {
         $player_cards = json_decode($row['cards'], true);
         if ($row['id'] != $_SESSION['id_player']) {
             $table_item = array(
-                "id" => 0,
+                "status" => 0,
                 "name" => $row['name'],
                 "cards" => 0
             );
             if ($macao->getPlayerCount() < 2) {
                 if ($macao->getHost() == $row['id'])
-                    $table_item['id'] = 2;
+                    $table_item['status'] = 2;
                 elseif (isset($player_cards['ready']) && $player_cards['ready'] == true)
-                    $table_item['id'] = 1;
+                    $table_item['status'] = 1;
             } else {
                 if ($row['id'] == $macao->getRound())
-                    $table_item['id'] = 1;
+                    $table_item['status'] = 1;
                 $table_item['cards'] = count($player_cards);
             }
             array_push($result['players'], $table_item);

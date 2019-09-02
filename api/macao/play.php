@@ -45,8 +45,8 @@ try {
             $macao->update(false, false);
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
-            die(json_encode(array('status' => 1)));
-        } else die(json_encode(array('status' => 0)));
+            die(json_encode(array('status' => 2)));
+        } else die(json_encode(array('status' => -1)));
     } else {
         $ready = $player->ready();
         $player->update();

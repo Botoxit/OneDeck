@@ -5,6 +5,7 @@
  * Time: 18:20
  */
 include_once '../config/GameException.php';
+
 class Table
 {
     // database connection and table name
@@ -45,12 +46,12 @@ class Table
      * @param array $newRules
      * @param int $newHost
      */
-    public function setter(string $newName, $newPassword, string $newGame, int $newPlayerLimit, array $newRules, int $newHost)
+    public function setter(string $newName, string $newPassword, string $newGame, int $newPlayerLimit, array $newRules, int $newHost)
     {
         $this->name = $newName;
         $this->password = $newPassword;
         $this->game = $newGame;
-        $this->players_limit = $newPlayerLimit;
+        $this->players_limit = 10 + $newPlayerLimit;
         $this->rules = $newRules;
         $this->host = $newHost;
     }
@@ -68,7 +69,7 @@ class Table
 
         if ($stmt->execute()) {
             $result = $stmt->get_result();
-            if(!$result)
+            if (!$result)
                 throw new GameException("Table with id $id don't exist in database.", 19);
             $row = $result->fetch_assoc();
             $this->id = $row['id'];
@@ -186,7 +187,7 @@ class Table
     /**
      * @return int
      */
-    public function getPlayersLimit() : int
+    public function getPlayersLimit(): int
     {
         return $this->players_limit;
     }
