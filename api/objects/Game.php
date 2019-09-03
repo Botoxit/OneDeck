@@ -36,7 +36,7 @@ class Game
     {
         // select all query
         $query = "SELECT g.*, ";
-        if($read_rules) $query .= "t.rules, ";
+        if ($read_rules) $query .= "t.rules, ";
         $query .= "t.host FROM " . Game::$DBTable_name . " g JOIN " . Table::getTableName() . " t ON t.id = g.id WHERE g.id = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param('i', $id);
@@ -53,7 +53,7 @@ class Game
             $this->deck = json_decode($row['deck'], true);
             $this->details = json_decode($row['details'], true);
             $this->change_at = $row['change_at'];
-            if($read_rules) $this->rules = json_decode($row['rules'], true);
+            if ($read_rules) $this->rules = json_decode($row['rules'], true);
             $this->host = $row['host'];
         } else throw new GameException("Unable to read game data with id: $id, $stmt->errno: $stmt->error", 2);
     }
@@ -68,9 +68,7 @@ class Game
         $cards = json_encode($this->cards);
 
         if (!$new_game) {
-            $current_player = array_splice($this->round, 0, 1);
-            if (!$macao)
-                $this->round = array_merge($this->round, $current_player);
+            $this->nextPlayer($macao);
         }
         $round = json_encode($this->round);
         $deck = json_encode($this->deck);
@@ -81,6 +79,19 @@ class Game
 
         if (!$stmt->execute())
             throw new GameException("Unable to update game data with id: $this->id, $stmt->errno: $stmt->error", 3);
+    }
+
+    private function nextPlayer(bool $macao)
+    {
+        $current_player = array_splice($this->round, 0, 1);
+        if (!$macao)
+            $this->round = array_merge($this->round, $current_player);
+        if (isset($this->details['waiting']) && isset($this->details['waiting'][$this->getRound()])) {
+            if ($this->details['waiting'][$this->getRound()] > 1)
+                $this->details['waiting'][$this->getRound()] -= 1;
+            else unset($this->details['waiting'][$this->getRound()]);
+            $this->nextPlayer(false);
+        }
     }
 
     /**

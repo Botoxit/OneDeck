@@ -32,9 +32,11 @@ try {
     if (count($post) > 1 && !$rules['deck'])
         die(json_encode(array('status' => 0, 'message' => "Decks is not allowed.")));
 
-
     if ($player->getId() != $macao->getRound())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
+    $details = $macao->getDetails();
+    if (isset($details['waiting']) && isset($details['waiting'][$player->getId()]))
+        die(json_encode(array('status' => 0, 'message' => "You are not allowed to do this.")));
 
     if (!$macao->checkCards($player, $post))//        throw new GameException("Cheater detected: id: " . $player->getId() . ", name: " . $player->getName(),9);
         die(json_encode(array('status' => 666, 'cards' => $player->getCards(), 'message' => "It's not your cards! YOU ARE A CHEATER!")));
