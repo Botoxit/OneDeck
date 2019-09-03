@@ -24,8 +24,13 @@ $player = new Player();
 $post = json_decode(file_get_contents("php://input"));
 
 try {
-    if (empty($post))
+    if (empty($post->cards))
         throw new GameException("Bad request, post data is missing", 8);
+    $symbol = 0;
+    if (!empty($post->status) && ($post->status < 0 || $post->status > 4))
+        throw new GameException("Bad request, post data is missing", 8);
+    elseif (!empty($post->status))
+        $symbol = $post->status;
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable(), true);
     $rules = $macao->getRules();
@@ -41,7 +46,7 @@ try {
     if (!$macao->checkCards($player, $post))//        throw new GameException("Cheater detected: id: " . $player->getId() . ", name: " . $player->getName(),9);
         die(json_encode(array('status' => 666, 'cards' => $player->getCards(), 'message' => "It's not your cards! YOU ARE A CHEATER!")));
 
-    if (!$macao->verify($post))
+    if (!$macao->verify($post, $symbol))
         die(json_encode(array('status' => 0, 'message' => "This cards is not right.")));
 
     $win = false;

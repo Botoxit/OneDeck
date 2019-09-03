@@ -22,18 +22,21 @@ $post = json_decode(file_get_contents("php://input"));
 
 try {
 // make sure data is not empty
-    if (empty($post->playerName) || empty($post->tableId))
+    if (empty($post->playerName) || empty($post->id))
         throw new GameException("Bad request, post data is missing", 8);
 
     $table = new Table();
-    $table->readOne($post->tableId);
+    $table->readOne($post->id);
 
     $playerLimit = $table->getPlayersLimit();
     if ($playerLimit % 11 == 0)
-        die(json_encode(array("status" => 0, "message" => "Table is full!")));
+        die(json_encode(array("status" => -20, "message" => "Table is full!")));
+
+    if(!$table->checkPassword($post->password))
+        die(json_encode(array("status" => 0, "message" => "Wrong password!")));
 
     $player = new Player($post->playerName);
-    $player->setIdTable($post->tableId);
+    $player->setIdTable($post->id);
     $player->create();
 
     $playerLimit += 10;

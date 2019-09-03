@@ -10,7 +10,7 @@ include_once 'Player.php';
 class Macao extends Game
 {
     // {"takeCards_color":0,"waitCard":4,"waitCard_color":1,"changeSymbol":1,"changeSymbol_color":0,"stopCard":7,"stopCard_color":0,"deck":1,"stop_wait":1}
-    public function verify(array $cards, $symbol = 0)
+    public function verify(array $cards, $symbol)
     {
         $tableCard = $this->getFirstTableCard();
         $details = $this->getDetails();

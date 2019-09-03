@@ -46,7 +46,7 @@ class Table
      * @param array $newRules
      * @param int $newHost
      */
-    public function setter(string $newName, string $newPassword, string $newGame, int $newPlayerLimit, array $newRules, int $newHost)
+    public function setter(string $newName, $newPassword, string $newGame, int $newPlayerLimit, array $newRules, int $newHost)
     {
         $this->name = $newName;
         $this->password = $newPassword;
@@ -198,6 +198,15 @@ class Table
     public function setPlayersLimit($players_limit): void
     {
         $this->players_limit = $players_limit;
+    }
+
+    public function checkPassword(string $password) : bool
+    {
+        if(empty($this->password))
+            return true;
+        if(!empty($password) && $password == $this->password)
+            return true;
+        return false;
     }
 
     /**
