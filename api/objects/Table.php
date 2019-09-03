@@ -51,7 +51,9 @@ class Table
         $this->name = $newName;
         $this->password = $newPassword;
         $this->game = $newGame;
-        $this->players_limit = 10 + $newPlayerLimit;
+        if($newPlayerLimit < 10)
+            $newPlayerLimit += 10;
+        $this->players_limit = $newPlayerLimit;
         $this->rules = $newRules;
         $this->host = $newHost;
     }
@@ -219,8 +221,16 @@ class Table
         $stmt->bind_param('ii', $this->host, $this->id);
 
         if ($stmt->execute()) {
-            $row = $stmt->fetch();
+            $row = $stmt->get_result()->fetch_assoc();
             $this->host = $row['id'];
         } else throw new GameException("Unable change host for table with id $this->id, $stmt->errno: $stmt->error", 17);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRules()
+    {
+        return $this->rules;
     }
 }

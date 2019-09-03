@@ -20,7 +20,7 @@ class Game
     private $details = [];
     private $change_at = 0;
     private $rules = [];
-    private $host = "";
+    private $host = 0;
 
     public function __construct()
     {

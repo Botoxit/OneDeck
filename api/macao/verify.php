@@ -34,7 +34,7 @@ try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable(), true);
     $rules = $macao->getRules();
-    if (count($post) > 1 && !$rules['deck'])
+    if (count($post->cards) > 1 && !$rules['deck'])
         die(json_encode(array('status' => 0, 'message' => "Decks is not allowed.")));
 
     if ($player->getId() != $macao->getRound())
@@ -43,14 +43,14 @@ try {
     if (isset($details['waiting']) && isset($details['waiting'][$player->getId()]))
         die(json_encode(array('status' => 0, 'message' => "You are not allowed to do this.")));
 
-    if (!$macao->checkCards($player, $post))//        throw new GameException("Cheater detected: id: " . $player->getId() . ", name: " . $player->getName(),9);
+    if (!$macao->checkCards($player, $post->cards))//        throw new GameException("Cheater detected: id: " . $player->getId() . ", name: " . $player->getName(),9);
         die(json_encode(array('status' => 666, 'cards' => $player->getCards(), 'message' => "It's not your cards! YOU ARE A CHEATER!")));
 
-    if (!$macao->verify($post, $symbol))
+    if (!$macao->verify($post->cards, $symbol))
         die(json_encode(array('status' => 0, 'message' => "This cards is not right.")));
 
     $win = false;
-    if ($player->removeCards($post) == 0) {
+    if ($player->removeCards($post->cards) == 0) {
         $win = true;
         if (!isset($this->details['rank']))
             $this->details['rank'] = array($player->getId());

@@ -65,7 +65,7 @@ try {
             "password" => $row['password'] == '' ? '' : 'X',
             "game" => $row['game'],
             "playersLimit" => $row['players_limit'],
-            "rules" => json_decode($row['rules'])
+            "rules" => $row['rules']
         );
         array_push($table_list, $table_item);
     }
