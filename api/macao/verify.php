@@ -51,10 +51,12 @@ try {
 
     $win = false;
     if ($player->removeCards($post->cards) == 0) {
+        $details = $macao->getDetails();
         $win = true;
         if (!isset($details['rank']))
             $details['rank'] = array($player->getId());
-        else array_push($this->details['rank'], $player->getId());
+        else array_push($details['rank'], $player->getId());
+        $macao->setDetails($details);
     }
     $player->update();
     $macao->update($win);
