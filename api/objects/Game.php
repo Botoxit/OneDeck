@@ -24,7 +24,7 @@ class Game
 
     public function __construct()
     {
-        $this->conn = DataBase::getConnection();
+        $this->conn = Database::getConnection();
     }
 
     /**

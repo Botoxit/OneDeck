@@ -13,7 +13,7 @@ header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 // include database and object files
-include_once '../config/DataBase.php';
+include_once '../config/Database.php';
 include_once '../objects/Table.php';
 include_once '../objects/Player.php';
 
@@ -43,7 +43,7 @@ try {
     $table->setPlayersLimit($playerLimit);
     $table->update();
 
-    $conn = DataBase::getConnection();
+    $conn = Database::getConnection();
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
     die(json_encode(array('status' => 1)));

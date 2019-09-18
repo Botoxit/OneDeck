@@ -23,7 +23,7 @@ class Player
     public function __construct(string $newName = "Player")
     {
         $this->name = $newName;
-        $this->conn = DataBase::getConnection();
+        $this->conn = Database::getConnection();
     }
 
     /**

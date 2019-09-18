@@ -5,7 +5,7 @@
  * Time: 19:34
  */
 
-include_once 'Debug.php';
+require_once 'Debug.php';
 
 error_reporting(E_ALL);
 ini_set("display_errors", "On");
@@ -14,7 +14,7 @@ if(session_id() == '' || !isset($_SESSION)) {
     session_start();
 }
 
-class DataBase
+class Database
 {
     private const HOST = "127.0.0.1:53320";
     private const USER = "azure";

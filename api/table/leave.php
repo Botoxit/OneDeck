@@ -13,12 +13,12 @@ header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
 
 // include database and object files
-include_once '../config/DataBase.php';
+include_once '../config/Database.php';
 include_once '../objects/Table.php';
 include_once '../objects/Player.php';
 include_once '../objects/Game.php';
 
-$conn = DataBase::getConnection();
+$conn = Database::getConnection();
 $player = new Player();
 
 try {

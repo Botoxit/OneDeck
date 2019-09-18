@@ -25,7 +25,7 @@ class Table
      */
     public function __construct()
     {
-        $this->conn = DataBase::getConnection();
+        $this->conn = Database::getConnection();
     }
 
     /**

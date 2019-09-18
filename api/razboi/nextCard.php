@@ -7,11 +7,11 @@ header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
 
 // include database and object files
-include_once '../config/DataBase.php';
+include_once '../config/Database.php';
 include_once '../objects/Razboi.php';
 include_once '../objects/Player.php';
 
-$conn = DataBase::getConnection();
+$conn = Database::getConnection();
 $razboi = new Razboi();
 $player = new Player();
 

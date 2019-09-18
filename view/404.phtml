@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>TechNx | Error 404</title>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Page not found">
+    <meta name="author" content="Neculache Nicu">
+
+    <?php require_once VIEW . 'import.phtml' ?>
+</head>
+
+<body>
+<!-- ******HEADER****** -->
+<header id="header" class="header">
+    <div class="container">
+        <h1 class="logo float-left">
+            <a href="/home">
+                <span class="logo-title">TechNx</span>
+            </a>
+        </h1><!--//logo-->
+    </div>
+</header><!--//header-->
+
+<section class="blue-line"></section>
+
+<!-- ******DOCS****** -->
+<section id="docs" class="docs section">
+    <div class="container">
+        <div class="docs-inner">
+            <h2 class="title text-center">404 Page not found!</h2>
+            <div class="block">
+                <p class="text-center">The requested URL <?= $_SERVER['REQUEST_URI'] ?> was not found on this server.</p>
+            </div><!--//block-->
+            <div class="text-center">
+                <img id="img1" class="img-fluid img-logo" src="../assets/images/error-404.png" alt=""/>
+                <br>
+                <a class="btn btn-cta-primary" href="/home">Back to home page</a>
+            </div>
+        </div><!--//docs-inner-->
+    </div><!--//container-->
+</section><!--//features-->
+
+<!-- ******FOOTER****** -->
+<footer class="footer">
+    <div class="container text-center">
+       <small class="copyright">Designed with <i class="fas fa-heart"></i></small>
+    </div><!--//container-->
+</footer><!--//footer-->
+
+</body>
+</html>

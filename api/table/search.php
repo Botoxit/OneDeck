@@ -13,11 +13,11 @@ header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 // include database and object files
-include_once '../config/DataBase.php';
+include_once '../config/Database.php';
 include_once '../objects/Table.php';
 
 // get database connection
-$conn = DataBase::getConnection();
+$conn = Database::getConnection();
 // get posted data
 $post = json_decode(file_get_contents("php://input"));
 
