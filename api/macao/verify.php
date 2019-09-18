@@ -13,11 +13,11 @@ header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 // include database and object files
-include_once '../config/DataBase.php';
+include_once '../config/Database.php';
 include_once '../objects/Macao.php';
 include_once '../objects/Player.php';
 
-$conn = DataBase::getConnection();
+$conn = Database::getConnection();
 $macao = new Macao();
 $player = new Player();
 // get posted data
@@ -52,8 +52,8 @@ try {
     $win = false;
     if ($player->removeCards($post->cards) == 0) {
         $win = true;
-        if (!isset($this->details['rank']))
-            $this->details['rank'] = array($player->getId());
+        if (!isset($details['rank']))
+            $details['rank'] = array($player->getId());
         else array_push($this->details['rank'], $player->getId());
     }
     $player->update();
