@@ -4,7 +4,7 @@
  * Date: 14.04.2019
  * Time: 18:20
  */
-include_once '../config/GameException.php';
+include_once 'GameException.php';
 
 class Table
 {

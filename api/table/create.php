@@ -13,9 +13,9 @@ header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 // include database and object files
-include_once '../config/Database.php';
-include_once '../objects/Table.php';
-include_once '../objects/Player.php';
+include_once CORE . 'Database.php';
+include_once API . 'objects/Table.php';
+include_once API . 'objects/Player.php';
 
 // get posted data
 $post = json_decode(file_get_contents("php://input"));
