@@ -54,8 +54,8 @@ try {
         $details = $macao->getDetails();
         $win = true;
         if (!isset($details['rank']))
-            $details['rank'] = array($player->getId());
-        else array_push($details['rank'], $player->getId());
+            $details['rank'] = array(array('id' => $player->getId(), 'name' => $player->getName()));
+        else array_push($details['rank'], array('id' => $player->getId(), 'name' => $player->getName()));
         $macao->setDetails($details);
     }
     $player->update();

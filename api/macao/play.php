@@ -48,12 +48,14 @@ try {
             die(json_encode(array('status' => 2)));
         } else die(json_encode(array('status' => -1)));
     } else {
-        $ready = $player->ready();
-        $player->update();
-        if (!$conn->commit())
-            throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
-        if ($ready)
-            die(json_encode(array('status' => 1)));
+        if ($macao->getPlayerCount() < 2) {
+            $ready = $player->ready();
+            $player->update();
+            if (!$conn->commit())
+                throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
+            if ($ready)
+                die(json_encode(array('status' => 1)));
+        }
         die(json_encode(array('status' => 0)));
     }
 } catch (GameException $e) {

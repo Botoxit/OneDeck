@@ -27,13 +27,13 @@ try {
     if (empty($details['wait']))
         die(json_encode(array('status' => 0, 'message' => "You don't need to wait.")));
 
-    if($details['wait'] > 1) {
+    if ($details['wait'] > 1) {
         if (!isset($details['waiting']))
             $details['waiting'] = array();
         $details['waiting'][$player->getId()] = $details['wait'] - 1;
         unset($details['wait']);
-        $macao->setDetails($details);
-    }
+    } else unset($details['wait']);
+    $macao->setDetails($details);
     $macao->update();
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);

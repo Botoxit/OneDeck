@@ -37,7 +37,7 @@ class Razboi extends Game
 
         $details = $this->getDetails();
         if (!empty($details['rank'])) {
-            $key = array_search($details['rank'][0], $round);
+            $key = array_search($details['rank'][0]['id'], $round);
             if ($key > 0) {
                 $players_slice = array_splice($round, 0, $key);
                 $round = array_merge($round, $players_slice);

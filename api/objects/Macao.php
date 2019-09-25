@@ -57,8 +57,8 @@ class Macao extends Game
         // If I need to wait
         if (!empty($details['wait'])) {
             if (intdiv($cards[0], 10) == $rules['waitCard']) {
-                if ($rules['waitCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
-                    return false;
+//                if ($rules['waitCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
+//                    return false;
                 $details['wait'] = $details['wait'] + count($cards);
                 $this->setDetails($details);
                 $this->addCards($cards);
@@ -111,6 +111,7 @@ class Macao extends Game
                 if ($rules['stopCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
             }
+            $this->setDetails($details);
             $this->addCards($cards);
             return true;
         }
@@ -118,6 +119,7 @@ class Macao extends Game
             if (!$this->checkSymbol($cards, $tableSymbol))
                 return false;
         }
+        $this->setDetails($details);
         $this->addCards($cards);
         return true;
     }
@@ -201,7 +203,7 @@ class Macao extends Game
 
         $details = $this->getDetails();
         if (!empty($details['rank'])) {
-            $key = array_search($details['rank'][0], $round);
+            $key = array_search($details['rank'][0]['id'], $round);
             if ($key > 0) {
                 $players_slice = array_splice($round, 0, $key);
                 $round = array_merge($round, $players_slice);

@@ -70,6 +70,13 @@ class Game
         if (!$new_game) {
             $this->nextPlayer($macao);
         }
+        if ($macao && count($this->round) == 1) {
+            $lastPlayer = new Player();
+            $lastPlayer->readOne($this->getRound());
+            if (!isset($this->details['rank']))
+                $this->details['rank'] = array(array('id' => $lastPlayer->getId(), 'name' => $lastPlayer->getName()));
+            else array_push($this->details['rank'], array('id' => $lastPlayer->getId(), 'name' => $lastPlayer->getName()));
+        }
         $round = json_encode($this->round);
         $deck = json_encode($this->deck);
         $details = json_encode($this->details);
@@ -84,8 +91,9 @@ class Game
     private function nextPlayer(bool $macao)
     {
         $current_player = array_splice($this->round, 0, 1);
-        if (!$macao)
+        if (!$macao) {
             $this->round = array_merge($this->round, $current_player);
+        }
         if (isset($this->details['waiting']) && isset($this->details['waiting'][$this->getRound()])) {
             if ($this->details['waiting'][$this->getRound()] > 1)
                 $this->details['waiting'][$this->getRound()] -= 1;
