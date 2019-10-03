@@ -52,7 +52,7 @@ class Player
 
             $this->id = $row['id'];
             $this->id_table = $row['id_table'];
-            $this->name = utf8_decode($row['name']);
+            $this->name = $row['name'];
             $this->cards = json_decode($row['cards'], true);
         } else throw new GameException("Unable to read player with id $id, $stmt->errno: $stmt->error", 1);
     }
@@ -82,7 +82,6 @@ class Player
     {
         $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, ?, ?, '{}')";
         $stmt = $this->conn->prepare($query);
-        $this->name = utf8_encode($this->name);
         $stmt->bind_param('is', $this->id_table, $this->name);
 
         if ($stmt->execute()) {

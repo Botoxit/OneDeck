@@ -9,6 +9,13 @@ class apiController extends Controller
         Application::redirectTo();
     }
 
+    public function wakeUp()
+    {
+        if (isset($GET['ver']) && $_GET['ver'] < 0.4)
+            die(json_encode(array("status" => 0)));
+        die(json_encode(array("status" => 1)));
+    }
+
     public function table(string $action)
     {
         if (file_exists(API . 'table' . DIRECTORY_SEPARATOR . $action . '.php')) {

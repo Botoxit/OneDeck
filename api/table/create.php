@@ -46,7 +46,7 @@ try {
         if (!$conn->commit())
             throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
         http_response_code(201);    // set response code - 201 created
-        die(json_encode(array("status" => $idTable)));
+        die(json_encode(array("status" => $idTable, "message" => $post->playerName)));
     }
 } catch (GameException $e) {
     switch ($e->getCode()) {
