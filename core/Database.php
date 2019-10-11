@@ -33,6 +33,7 @@ class Database
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
             self::$conn = new mysqli(self::HOST, self::USER, self::PASSWORD, self::DATABASE);
             self::$conn->autocommit(false);
+            self::$conn->set_charset("utf8");
             mysqli_report(MYSQLI_REPORT_OFF);
         } catch (mysqli_sql_exception $sql_exception) {
             Debug::Log($sql_exception->getCode() . ':' . $sql_exception->getMessage(), basename(__FILE__), "ERROR");
