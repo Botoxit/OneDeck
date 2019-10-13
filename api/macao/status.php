@@ -58,7 +58,7 @@ try {
                 if ($row['id'] == $macao->getRound())
                     $table_item['status'] = 1;
                 $table_item['cards'] = count($player_cards);
-                if(isset($result['details']['waiting']) && !empty($result['details']['waiting'][$row['id']]))
+                if (isset($result['details']['waiting']) && !empty($result['details']['waiting'][$row['id']]))
                     $table_item['wait'] = $result['details']['waiting'][$row['id']];
             }
             array_push($result['players'], $table_item);

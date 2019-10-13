@@ -23,22 +23,20 @@ $player = new Player();
 
 try {
     $player->readOne($_SESSION['id_player']);
-    $id_table = $player->getIdTable();
+    $game = new Game();
+    $game->readOne($player->getIdTable());
+    $details = $game->getDetails();
 
-    if ($id_table == null) {
-        $player->delete();
-        if (!$conn->commit())
-            throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
-        die(json_encode(array('status' => 1)));
+    if($game->getPlayerCount() - 1 > $details['kick'])
+    {
+
     }
+
     $table = new Table();
-    $table->readOne($id_table);
-    $playerLimit = $table->getPlayersLimit() - 10;
-    if ($playerLimit < 10) {
-        $table->deleteTable();
-    } else {
-        $game = new Game();
-        $game->readOne($player->getIdTable());
+    $table->readOne($player->getIdTable());
+
+
+
         $game->deletePlayer($player);
         $game->update();
 
@@ -47,7 +45,7 @@ try {
             $table->newHost();
         $table->update();
         $player->delete();
-    }
+
 
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
