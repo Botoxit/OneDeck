@@ -43,7 +43,7 @@ class Game
 
         if ($stmt->execute()) {
             $result = $stmt->get_result();
-            if (!$result)
+            if ($result->num_rows == 0)
                 throw new GameException("Game data with id $id don't exist in database.", 19);
             $row = $result->fetch_assoc();
 
@@ -124,6 +124,8 @@ class Game
      */
     public function deletePlayer(Player $player)
     {
+        if($player->getId() == $this->getRound() && isset($this->details['kick']))
+            unset($this->details['kick']);
         array_push($this->deck, $player->getCards());
         $key = array_search($player->getId(), $this->round);
         if ($key >= 0) {

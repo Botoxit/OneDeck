@@ -11,6 +11,9 @@ include_once CORE . 'Database.php';
 include_once API . 'objects/Razboi.php';
 include_once API . 'objects/Player.php';
 
+if(!isset($_SESSION['id_player']))
+    die(json_encode(array("status" => -21, "message" => "id_player is not set!")));
+
 $conn = Database::getConnection();
 $razboi = new Razboi();
 $player = new Player();

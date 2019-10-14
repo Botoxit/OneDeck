@@ -71,7 +71,7 @@ class Table
 
         if ($stmt->execute()) {
             $result = $stmt->get_result();
-            if (!$result)
+            if ($result->num_rows == 0)
                 throw new GameException("Table with id $id don't exist in database.", 19);
             $row = $result->fetch_assoc();
             $this->id = $row['id'];

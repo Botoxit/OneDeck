@@ -27,18 +27,18 @@ try {
     $game->readOne($player->getIdTable());
     $details = $game->getDetails();
 
-    if($game->getPlayerCount() - 1 > $details['kick'])
-    {
+    if (!isset($details['kick'])) {// || $game->getPlayerCount() - 1 > $details['kick']) {
+        $details['kick'] = 1;
+    } elseif ($game->getPlayerCount() - 1 > $details['kick']) {
+        $details['kick'] = $details['kick'] + 1;
+    } else {
+        $kick_player = new Player();
+        $kick_player->readOne($game->getRound());
 
-    }
+        $table = new Table();
+        $table->readOne($player->getIdTable());
 
-    $table = new Table();
-    $table->readOne($player->getIdTable());
-
-
-
-        $game->deletePlayer($player);
-        $game->update();
+        $game->deletePlayer($kick_player);
 
         $table->setPlayersLimit($playerLimit);
         if ($game->getHost() == $player->getId())
@@ -46,11 +46,15 @@ try {
         $table->update();
         $player->delete();
 
+        unset($details['kick']);
+    }
+
+    $game->setDetails($details);
+    $game->update();
 
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
-    session_unset();
-    session_destroy();
+
     die(json_encode(array("status" => 1)));
 } catch (GameException $e) {
     switch ($e->getCode()) {

@@ -24,7 +24,7 @@ class Razboi extends Game
 
         $round = [];
         $players_list = $player->readAll($player->getIdTable());
-        if (!$players_list)
+        if ($players_list->num_rows == 0)
             die(json_encode(array("status" => -1, "message" => "Unable to read players.")));
         while ($row = $players_list->fetch_assoc()) {
             $player->readOne($row['id']);

@@ -72,4 +72,5 @@ try {
         case 12:
             die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update table")));
     }
+    die(json_encode(array("status" => -$e->getCode(), "message" => $e->getMessage())));
 }

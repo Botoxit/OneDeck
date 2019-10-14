@@ -17,6 +17,9 @@ include_once CORE . 'Database.php';
 include_once API . 'objects/Macao.php';
 include_once API . 'objects/Player.php';
 
+if(!isset($_SESSION['id_player']))
+    die(json_encode(array("status" => -21, "message" => "id_player is not set!")));
+
 $conn = Database::getConnection();
 $macao = new Macao();
 $player = new Player();
@@ -40,6 +43,8 @@ try {
     if ($player->getId() != $macao->getRound())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
     $details = $macao->getDetails();
+    unset($details['kick']);
+    $macao->setDetails($details);
     if (isset($details['waiting']) && isset($details['waiting'][$player->getId()]))
         die(json_encode(array('status' => 0, 'message' => "You are not allowed to do this.")));
 

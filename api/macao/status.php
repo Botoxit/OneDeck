@@ -18,6 +18,9 @@ include_once API . 'objects/Table.php';
 include_once API . 'objects/Macao.php';
 include_once API . 'objects/Player.php';
 
+if(!isset($_SESSION['id_player']))
+    die(json_encode(array("status" => -21, "message" => "id_player is not set!")));
+
 $conn = Database::getConnection();
 $macao = new Macao();
 $player = new Player();
@@ -26,7 +29,7 @@ try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable());
     $players_list = $player->readAll($player->getIdTable());
-    if (!$players_list)
+    if ($players_list->num_rows == 0)
         throw new GameException("Players list for table with id " . $player->getIdTable() . " don't exist in database.", 19);
 
     $result = array();
