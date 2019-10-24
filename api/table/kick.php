@@ -27,10 +27,13 @@ try {
     $game->readOne($player->getIdTable());
     $details = $game->getDetails();
 
-    if (!isset($details['kick'])) {// || $game->getPlayerCount() - 1 > $details['kick']) {
-        $details['kick'] = 1;
-    } elseif ($game->getPlayerCount() - 1 > $details['kick']) {
-        $details['kick'] = $details['kick'] + 1;
+    if (!isset($details['kick']))
+        $details['kick'] = array();
+    elseif (array_search($player->getId(), $details['kick']) >= 0)
+        die(json_encode(array("status" => 0)));
+
+    if ($game->getPlayerCount() - 1 > count($details['kick'])) {
+        array_push($details['kick'], $player->getId());
     } else {
         $kick_player = new Player();
         $kick_player->readOne($game->getRound());

@@ -39,6 +39,7 @@ try {
     if ($macao->getPlayerCount() < 2)
         $result['details']['new_game'] = -1;
     $result['status'] = 0; // it's not your turn or you are not ready
+    $result['elapsedTime'] = strtotime("now") - $macao->getChangeAt();
     $result['players'] = array();
     $i = 0;
     $me = 0;

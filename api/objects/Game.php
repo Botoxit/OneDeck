@@ -52,7 +52,7 @@ class Game
             $this->round = json_decode($row['round'], true);
             $this->deck = json_decode($row['deck'], true);
             $this->details = json_decode($row['details'], true);
-            $this->change_at = $row['change_at'];
+            $this->change_at = strtotime($row['change_at']);
             if ($read_rules) $this->rules = json_decode($row['rules'], true);
             $this->host = $row['host'];
         } else throw new GameException("Unable to read game data with id: $id, $stmt->errno: $stmt->error", 2);
@@ -119,12 +119,20 @@ class Game
     }
 
     /**
+     * @return int
+     */
+    public function getChangeAt()
+    {
+        return $this->change_at;
+    }
+
+    /**
      * Delete a player, put all cards at the end of deck and delete from round array
      * @param Player $player
      */
     public function deletePlayer(Player $player)
     {
-        if($player->getId() == $this->getRound() && isset($this->details['kick']))
+        if ($player->getId() == $this->getRound() && isset($this->details['kick']))
             unset($this->details['kick']);
         array_push($this->deck, $player->getCards());
         $key = array_search($player->getId(), $this->round);
