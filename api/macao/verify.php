@@ -64,7 +64,7 @@ try {
         $macao->setDetails($details);
     }
     $player->update();
-    $macao->update($win);
+    $macao->update(true, $win);
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
     die(json_encode(array('status' => 1)));

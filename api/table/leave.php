@@ -39,8 +39,9 @@ try {
     } else {
         $game = new Game();
         $game->readOne($player->getIdTable());
+        $resetTime = $game->getRound() == $player->getId();
         $game->deletePlayer($player);
-        $game->update();
+        $game->update($resetTime);
 
         $table->setPlayersLimit($playerLimit);
         if ($game->getHost() == $player->getId())

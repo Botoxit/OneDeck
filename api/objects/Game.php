@@ -59,11 +59,12 @@ class Game
     }
 
     /**
+     * @param bool $update_time
      * @param bool $macao
      * @param bool $new_game
      * @throws GameException
      */
-    public function update(bool $macao = false, bool $new_game = false)
+    public function update(bool $update_time, bool $macao = false, bool $new_game = false)
     {
         $cards = json_encode($this->cards);
 
@@ -80,7 +81,10 @@ class Game
         $round = json_encode($this->round);
         $deck = json_encode($this->deck);
         $details = json_encode($this->details);
-        $query = "UPDATE " . Game::$DBTable_name . " SET cards = ?, round = ?, deck = ?, details = ?  WHERE id = ?";
+        $query = "UPDATE " . Game::$DBTable_name . " SET cards = ?, round = ?, deck = ?, details = ?";
+        if($update_time)
+            $query = $query . ", change_at = CURRENT_TIMESTAMP WHERE id = ?";
+        else $query = $query . " WHERE id = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param('ssssi', $cards, $round, $deck, $details, $this->id);
 

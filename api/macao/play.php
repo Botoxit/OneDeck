@@ -45,7 +45,7 @@ try {
         $total_players = $row['total'];
         if ($ready_players == $total_players && $total_players > 1) {
             $macao->new_game($player);
-            $macao->update(false, false);
+            $macao->update(false,false, false);
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
             die(json_encode(array('status' => 2)));

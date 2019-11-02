@@ -29,7 +29,7 @@ try {
     $razboi->nextCard($cards[0]);
 
     $player->update();
-    $macao->update();
+    $macao->update(true);
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
     die(json_encode(array('status' => 1, 'cards' => $cards)));

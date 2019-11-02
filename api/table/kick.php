@@ -32,7 +32,7 @@ try {
     elseif (array_search($player->getId(), $details['kick']) >= 0)
         die(json_encode(array("status" => 0)));
 
-    if ($game->getPlayerCount() - 1 > count($details['kick'])) {
+    if ($game->getPlayerCount() - 2 > count($details['kick'])) {
         array_push($details['kick'], $player->getId());
     } else {
         $kick_player = new Player();
@@ -43,17 +43,17 @@ try {
 
         $game->deletePlayer($kick_player);
 
-        $table->setPlayersLimit($playerLimit);
-        if ($game->getHost() == $player->getId())
+        $table->setPlayersLimit($table->getPlayersLimit() - 10);
+        if ($game->getHost() == $kick_player->getId())
             $table->newHost();
         $table->update();
-        $player->delete();
+        $kick_player->delete();
 
         unset($details['kick']);
     }
 
     $game->setDetails($details);
-    $game->update();
+    $game->update(true);
 
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
