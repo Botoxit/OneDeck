@@ -87,20 +87,5 @@ try {
 
     die(json_encode($result));
 } catch (GameException $e) {
-    switch ($e->getCode()) {
-        case 1:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read player.")));
-        case 2:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read macao game data.")));
-        case 3:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update macao game data.")));
-        case 4:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to commit.")));
-        case 5:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read ready player.")));
-        case 6:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update player.")));
-        case 7:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read all players from table.")));
-    }
+    GameException::exitMessage($e->getCode());
 }

@@ -49,26 +49,5 @@ try {
         die(json_encode(array("status" => $idTable, "message" => $post->playerName)));
     }
 } catch (GameException $e) {
-    switch ($e->getCode()) {
-        case 1:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read player.")));
-        case 2:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read macao game data.")));
-        case 3:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update macao game data.")));
-        case 4:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to commit.")));
-        case 5:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to read ready player.")));
-        case 6:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to update player.")));
-        case 8:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Bad request, data is missing.")));
-        case 9:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "It's not your cards! YOU ARE A CHEATER!")));
-        case 10:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to create player")));
-        case 11:
-            die(json_encode(array("status" => -$e->getCode(), "message" => "Unable to create table")));
-    }
+    GameException::exitMessage($e->getCode());
 }

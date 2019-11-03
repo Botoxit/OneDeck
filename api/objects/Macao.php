@@ -163,9 +163,10 @@ class Macao extends Game
             }
             if ($match) {
                 if ($i == 0 && count($cards) > 1) {
-                    $aux = $cards[1];
-                    $cards[1] = $cards[0];
-                    $cards[0] = $aux;
+                    return false;
+//                    $aux = $cards[1];
+//                    $cards[1] = $cards[0];
+//                    $cards[0] = $aux;
                 }
                 return true;
             }
