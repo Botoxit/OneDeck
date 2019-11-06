@@ -31,11 +31,12 @@ class GameException extends Exception
         "Not found",                                // 19
         "Table is full",                            // 20
         "id_player is empty",                       // 21
+        "Update your application",                  // 22
     );
 
     public static function exitMessage(int $code)
     {
-        if($code < count(self::$messages))
+        if ($code < count(self::$messages))
             die(json_encode(array("status" => -$code, "message" => self::$messages[$code])));
         die(json_encode(array("status" => -$code, "message" => self::$messages[0])));
     }

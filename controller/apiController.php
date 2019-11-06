@@ -9,12 +9,16 @@ class apiController extends Controller
         Application::redirectTo();
     }
 
-    public function wakeUp()
+    public function wakeUp(int $ver)
     {
+        include_once API . 'objects' . DIRECTORY_SEPARATOR . 'GameException.php';
+        include_once API . 'objects' . DIRECTORY_SEPARATOR . 'Player.php';
+        header('Content-Type: application/json');
         if (isset($_SESSION['id_player']) && $_SESSION['id_player'] > 0) {
             try {
                 $player = new Player();
                 $player->readOne($_SESSION['id_player']);
+                include_once(API . 'table' . DIRECTORY_SEPARATOR . 'leave.php');
                 die(json_encode(array("status" => $player->getIdTable(), "message" => "You are already in a game")));
             }
             catch (GameException $e){
@@ -22,9 +26,9 @@ class apiController extends Controller
                 GameException::exitMessage($e->getCode());
             }
         }
-        if (isset($GET['ver']) && $_GET['ver'] < 0.4)
-            die(json_encode(array("status" => 0, "message" => "Update application")));
-        die(json_encode(array("status" => 1)));
+        if ($ver < 0.98)
+            GameException::exitMessage(22);
+        die(json_encode(array("status" => 0)));
     }
 
     public function table(string $action)
