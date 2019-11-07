@@ -92,7 +92,7 @@ class Table
      */
     public function readPaging(int $fromTableId, int $count)
     {
-        $query = "SELECT * FROM " . Table::$DBTable_name . " LIMIT ?, ?";
+        $query = "SELECT * FROM " . Table::$DBTable_name . " ORDER BY `created_at` DESC LIMIT ?, ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param('ii', $fromTableId, $count);
         if ($stmt->execute())
@@ -130,7 +130,7 @@ class Table
             $rules = json_encode($rules);
             $query = $query . " AND `rules` = '" . $rules . "'";
         }
-        $query = $query . " LIMIT $from_table_id, $count";
+        $query = $query . " ORDER BY `created_at` DESC LIMIT $from_table_id, $count";
         $query = str_replace("WHERE AND", "WHERE", $query);
         $result = $this->conn->query($query);
         if ($result)

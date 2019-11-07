@@ -9,7 +9,7 @@ class apiController extends Controller
         Application::redirectTo();
     }
 
-    public function wakeUp(int $ver)
+    public function wakeUp(float $ver = 0)
     {
         include_once API . 'objects' . DIRECTORY_SEPARATOR . 'GameException.php';
         include_once API . 'objects' . DIRECTORY_SEPARATOR . 'Player.php';
