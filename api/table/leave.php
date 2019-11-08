@@ -51,7 +51,7 @@ try {
             $table->newHost();
         $table->update();
         $player->delete();
-    }//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! reset change_at
+    }
 
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
