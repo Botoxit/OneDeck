@@ -214,6 +214,7 @@ class Macao extends Game
 
         $this->setRound($round);
         $this->setDetails(array('new_game' => $this->getPlayerCount()));
-        $this->addCards($this->takeCards(1));
+
+        $this->setCards($this->takeCards(1));
     }
 }

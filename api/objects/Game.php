@@ -161,6 +161,11 @@ class Game
         $this->cards = array_merge($cards, $this->cards);
     }
 
+    protected function setCards(array $cards)
+    {
+        $this->cards = $cards;
+    }
+
     protected function setDeck(array $deck)
     {
         $this->deck = $deck;
@@ -195,8 +200,9 @@ class Game
         if ($count <= count($this->deck))
             return array_splice($this->deck, 0, $count);
         $this->deck = shuffle(array_splice($this->cards, 1));
-        if ($count <= count($this->deck))
+        if ($count <= count($this->deck)) {
             return array_splice($this->deck, 0, $count);
+        }
         return null;
     }
 
