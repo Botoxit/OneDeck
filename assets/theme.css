@@ -115,6 +115,15 @@ pre code {
   color: #17baef;
 }
 
+.dino-mic {
+  height: 40px;
+  width: auto;
+}
+.dino-mare {
+  height: 100px;
+  width: auto;
+}
+
 .header .logo {
   margin: 0;
   font-size: 26px;

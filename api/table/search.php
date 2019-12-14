@@ -24,8 +24,8 @@ $post = json_decode(file_get_contents("php://input"));
 $search = false;
 
 if (empty($post->id)) $start_id = 0; else $start_id = $post->id;    // paging
-if (!empty($post->name)) {
-    $name = $post->name;
+if (!empty($post->tableName)) {
+    $name = $post->tableName;
     $search = true;
 } else $name = null;
 
@@ -39,13 +39,13 @@ if (!empty($post->game)) {
     $search = true;
 } else $game = null;
 
-if (!empty($post->players_limit)) {
-    $players_limit = $post->players_limit;
+if (!empty($post->playersLimit) && $post->playersLimit > 0) {
+    $players_limit = $post->playersLimit;
     $search = true;
 } else $players_limit = null;
 
 if (!empty($post->rules)) {
-    $rules = $post->rules;
+    $rules = json_decode($post->rules);
     $search = true;
 } else $rules = null;
 

@@ -116,8 +116,9 @@ class Table
         $query = "SELECT * FROM " . Table::$DBTable_name . " WHERE";
         if (!empty($name))
             $query = $query . " `name` = '" . $name . "'";
-        if (!empty($password))
-            $query = $query . " AND `password` = ''";
+        if (!empty($password)) {
+            $query = $query . " AND ( `password` = '' OR `password` IS NULL )";
+        }
         if (!empty($game))
             $query = $query . " AND `game` = '" . $game . "'";
         if (!empty($players_limit)) {

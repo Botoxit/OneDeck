@@ -111,11 +111,12 @@ class Player
      */
     public function delete()
     {
-        $query = "DELETE FROM " . Player::$DBTable_name . " WHERE id = $this->id";
+        $query = "DELETE FROM " . Player::$DBTable_name . " WHERE id = ?";
         // prepare query statement
         $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('i', $this->id);
         // execute query
-        if (!$stmt->execute())
+        if (is_bool($stmt) || !$stmt->execute())
             throw new GameException("Unable to delete player with id: $this->id, $stmt->errno: $stmt->error", 14);
     }
 

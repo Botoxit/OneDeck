@@ -16,10 +16,11 @@ if(session_id() == '' || !isset($_SESSION)) {
 
 class Database
 {
-    private const HOST = "127.0.0.1:53320";
-    private const USER = "azure";
-    private const PASSWORD = "6#vWHD_$";
-    private const DATABASE = "localdb";
+    private const HOST = "localhost";
+    private const USER = "dinopyco_onedeck";
+    private const PASSWORD = "l%f1YZ*oj;z;";
+    private const DATABASE = "dinopyco_onedeck";
+    private const PORT = 3306;
     private static $conn;
 
     /**
@@ -31,7 +32,7 @@ class Database
             return self::$conn;
         try {
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-            self::$conn = new mysqli(self::HOST, self::USER, self::PASSWORD, self::DATABASE);
+            self::$conn = new mysqli(self::HOST, self::USER, self::PASSWORD, self::DATABASE, self::PORT);
             self::$conn->autocommit(false);
             self::$conn->set_charset("utf8");
             mysqli_report(MYSQLI_REPORT_OFF);
