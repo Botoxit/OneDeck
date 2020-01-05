@@ -12,4 +12,5 @@ set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $
 spl_autoload_register('spl_autoload',false);
 
 require_once CORE . 'Application.php';
+date_default_timezone_set('Europe/Bucharest');
 new Application;
