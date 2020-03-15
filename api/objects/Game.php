@@ -82,7 +82,7 @@ class Game
         $deck = json_encode($this->deck);
         $details = json_encode($this->details);
         $query = "UPDATE " . Game::$DBTable_name . " SET cards = ?, round = ?, deck = ?, details = ?";
-        if($update_time)
+        if ($update_time)
             $query = $query . ", change_at = CURRENT_TIMESTAMP WHERE id = ?";
         else $query = $query . " WHERE id = ?";
         $stmt = $this->conn->prepare($query);
@@ -168,7 +168,7 @@ class Game
 
     protected function setDeck(array $deck)
     {
-        $this->deck = $deck;
+        $this->deck = array_values($deck);
     }
 
     /**
@@ -193,14 +193,27 @@ class Game
 
     /**
      * @param int $count
+     * @param bool $firstCard
      * @return array
      */
-    public function takeCards(int $count): array
+    public function takeCards(int $count, bool $firstCard = false): array
     {
-        if ($count <= count($this->deck))
-            return array_splice($this->deck, 0, $count);
-        $this->deck = shuffle(array_splice($this->cards, 1));
+        if ($count > count($this->deck)) {
+            $this->deck = shuffle(array_splice($this->cards, 1));
+        }
+
         if ($count <= count($this->deck)) {
+            $invalidFirst = array(5, 6, 21, 22, 23, 24, 31, 32, 33, 34);
+            if ($firstCard && array_search($this->deck[0], $invalidFirst) != false) {
+                $cards = [];
+                for ($i = 1; $i < count($this->deck); $i++) {
+                    if (array_search($this->deck[$i], $invalidFirst) == false) {
+                        array_push($cards, $this->deck[$i]);
+                        unset($this->deck[$i]);
+                        return $cards;
+                    }
+                }
+            }
             return array_splice($this->deck, 0, $count);
         }
         return null;

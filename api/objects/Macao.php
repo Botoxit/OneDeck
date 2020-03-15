@@ -74,7 +74,7 @@ class Macao extends Game
 
 
         if ((($cards[0] > 20) && ($cards[0] < 40)) || $cards[0] == 5 || $cards[0] == 6) {
-            if ((intdiv($cards[0], 10) != intdiv($tableCard, 10))){// || ($tableCard > 4 && $cards[0] > 4)) {
+            if ((intdiv($cards[0], 10) != intdiv($tableCard, 10))) {// || ($tableCard > 4 && $cards[0] > 4)) {
                 if ($rules['takeCards_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
             }
@@ -203,18 +203,29 @@ class Macao extends Game
         }
 
         $details = $this->getDetails();
+
+        $round = array_values($round);
         if (!empty($details['rank'])) {
-            $round = array_values($round);
             $key = array_search($details['rank'][0]['id'], $round);
             if ($key > 0) {
                 $players_slice = array_splice($round, 0, $key);
                 $round = array_merge($round, $players_slice);
+            }
+        } else {
+            try {
+                $key = random_int(0, count($round) - 1);
+                if ($key > 0) {
+                    $players_slice = array_splice($round, 0, $key);
+                    $round = array_merge($round, $players_slice);
+                }
+            } catch (Exception $e) {
+                Debug::Log($e->getMessage(), __FILE__, "EXCEPTION");
             }
         }
 
         $this->setRound($round);
         $this->setDetails(array('new_game' => $this->getPlayerCount()));
 
-        $this->setCards($this->takeCards(1));
+        $this->setCards($this->takeCards(1, true));
     }
 }

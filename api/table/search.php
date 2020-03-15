@@ -49,14 +49,15 @@ if (!empty($post->rules)) {
     $search = true;
 } else $rules = null;
 
+$stmt = $conn->prepare("CALL `delete_inactive_tables`();");
+if ($stmt->execute())
+    Debug::Log("I deleted " . $stmt->affected_rows . " inactive tables.", __FILE__, 'INFO');
+else Debug::Log("I can't delete inactive tables $stmt->errno: $stmt->error", __FILE__, 'WARNING');
+$conn->commit();
+
 $table = new Table();
 
 try {
-    $stmt = $conn->prepare("CALL `delete_inactive_tables`();");
-    if ($stmt->execute())
-        Debug::Log("I deleted " . $stmt->affected_rows . "inactive tables.", __FILE__, 'INFO');
-    else Debug::Log("I can't delete inactive tables.", __FILE__, 'WARNING');
-
     if (!$search)
         $result = $table->readPaging($start_id, 100);
     else $result = $table->search($start_id, 100, $name, $password, $game, $players_limit, $rules);
