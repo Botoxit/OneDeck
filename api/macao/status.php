@@ -18,7 +18,7 @@ include_once API . 'objects/Table.php';
 include_once API . 'objects/Macao.php';
 include_once API . 'objects/Player.php';
 
-if(!isset($_SESSION['id_player']))
+if (!isset($_SESSION['id_player']))
     die(json_encode(array("status" => -21, "message" => "id_player is not set!")));
 
 $conn = Database::getConnection();
@@ -75,6 +75,11 @@ try {
                     $result['status'] = 1;
             } elseif ($_SESSION['id_player'] == $macao->getRound())
                 $result['status'] = 1;
+            else {
+                if (isset($result['details']['waiting']) && !empty($result['details']['waiting'][$_SESSION['id_player']]))
+                    $result['details']['iWait'] = $result['details']['waiting'][$_SESSION['id_player']];
+                else $result['details']['iWait'] = 0;
+            }
         }
     }
 

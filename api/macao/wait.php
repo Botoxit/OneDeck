@@ -28,15 +28,15 @@ try {
 
     $details = $macao->getDetails();
     unset($details['kick']);
-    if (empty($details['wait']))
+    if (empty($details['toWait']))
         die(json_encode(array('status' => 0, 'message' => "You don't need to wait.")));
 
-    if ($details['wait'] > 1) {
+    if ($details['toWait'] > 1) {
         if (!isset($details['waiting']))
             $details['waiting'] = array();
-        $details['waiting'][$player->getId()] = $details['wait'] - 1;
-        unset($details['wait']);
-    } else unset($details['wait']);
+        $details['waiting'][$player->getId()] = $details['toWait'] - 1;
+        unset($details['toWait']);
+    } else unset($details['toWait']);
     $macao->setDetails($details);
     $macao->update(true);
     if (!$conn->commit())

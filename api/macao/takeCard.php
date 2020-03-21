@@ -33,7 +33,7 @@ try {
 
     $details = $macao->getDetails();
     unset($details['kick']);
-    if (!empty($details['wait']))
+    if (!empty($details['toWait']))
         die(json_encode(array('status' => 0, 'message' => "You can't take card in this situation.")));
 
     if (!empty($details['new_game']) && $details['new_game'] > 0) {

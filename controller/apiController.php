@@ -26,7 +26,7 @@ class apiController extends Controller
                 GameException::exitMessage($e->getCode());
             }
         }
-        if ($ver < 1.1)
+        if ($ver < 1.2)
             GameException::exitMessage(22);
         die(json_encode(array("status" => 0)));
     }

@@ -199,7 +199,9 @@ class Game
     public function takeCards(int $count, bool $firstCard = false): array
     {
         if ($count > count($this->deck)) {
-            $this->deck = shuffle(array_splice($this->cards, 1));
+            $this->deck = array_merge($this->deck,array_splice($this->cards, 1));
+            if (!shuffle($this->deck))
+                Debug::Log("Shuffle deck + old cards failed",__FILE__,"WARNING");
         }
 
         if ($count <= count($this->deck)) {
