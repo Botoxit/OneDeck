@@ -27,7 +27,7 @@ try {
         throw new GameException("Bad request, post data is missing", 8);
 
     $player = new Player($post->playerName);
-    $player->create();
+    $id_player = $player->create();
 
     $password = null;
     if (!empty($post->password))
@@ -46,7 +46,7 @@ try {
         if (!$conn->commit())
             throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
         http_response_code(201);    // set response code - 201 created
-        die(json_encode(array("status" => $idTable, "message" => $post->playerName)));
+        die(json_encode(array("status" => $id_player, "message" => $post->playerName)));
     }
 } catch (GameException $e) {
     GameException::exitMessage($e->getCode());

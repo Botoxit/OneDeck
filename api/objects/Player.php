@@ -41,8 +41,9 @@ class Player
      */
     public function readOne($id)
     {
-        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id = '$id'";
+        $query = "SELECT * FROM " . Player::$DBTable_name . " WHERE id = ?";
         $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('i', $id);
 
         if ($stmt->execute()) {
             $result = $stmt->get_result();

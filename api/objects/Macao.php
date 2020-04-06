@@ -178,7 +178,7 @@ class Macao extends Game
      * @param Player $player
      * @throws GameException
      */
-    public function new_game(Player $player) // castigatorul incepe!!!!!!!!!!!!!!!!!!
+    public function new_game(Player $player)
     {
         $deck = array(5, 6);
         for ($i = 1; $i < 14; $i++) {

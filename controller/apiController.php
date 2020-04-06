@@ -1,6 +1,7 @@
 <?php
 
 require_once CORE . 'Controller.php';
+require_once CORE . 'Database.php';
 
 class apiController extends Controller
 {
@@ -9,20 +10,19 @@ class apiController extends Controller
         Application::redirectTo();
     }
 
-    public function wakeUp(float $ver = 0)
+    public function wakeUp(float $ver = 0, int $id_player = 0)
     {
         include_once API . 'objects' . DIRECTORY_SEPARATOR . 'GameException.php';
         include_once API . 'objects' . DIRECTORY_SEPARATOR . 'Player.php';
         header('Content-Type: application/json');
-        if (isset($_SESSION['id_player']) && $_SESSION['id_player'] > 0) {
+        if ($id_player > 0) {
             try {
                 $player = new Player();
-                $player->readOne($_SESSION['id_player']);
+                $player->readOne($id_player);
                 include_once(API . 'table' . DIRECTORY_SEPARATOR . 'leave.php');
                 die(json_encode(array("status" => $player->getIdTable(), "message" => "You are already in a game")));
-            }
-            catch (GameException $e){
-                unset($_SESSION['id_player']);
+            } catch (GameException $e) {
+                session_unset();
                 GameException::exitMessage($e->getCode());
             }
         }

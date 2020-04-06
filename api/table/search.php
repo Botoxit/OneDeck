@@ -50,8 +50,10 @@ if (!empty($post->rules)) {
 } else $rules = null;
 
 $stmt = $conn->prepare("CALL `delete_inactive_tables`();");
-if ($stmt->execute())
-    Debug::Log("I deleted " . $stmt->affected_rows . " inactive tables.", __FILE__, 'INFO');
+if ($stmt->execute()) {
+    if ($stmt->affected_rows > 0)
+        Debug::Log("I deleted " . $stmt->affected_rows . " inactive tables.", __FILE__, 'INFO');
+}
 else Debug::Log("I can't delete inactive tables $stmt->errno: $stmt->error", __FILE__, 'WARNING');
 $conn->commit();
 

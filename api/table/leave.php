@@ -55,8 +55,8 @@ try {
 
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
+    unset($_SESSION['id_player']);
     session_unset();
-    session_destroy();
     die(json_encode(array("status" => 1)));
 } catch (GameException $e) {
     GameException::exitMessage($e->getCode());

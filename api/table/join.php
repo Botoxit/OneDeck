@@ -37,7 +37,7 @@ try {
 
     $player = new Player($post->playerName);
     $player->setIdTable($post->id);
-    $player->create();
+    $id_player = $player->create();
 
     $playerLimit += 10;
     $table->setPlayersLimit($playerLimit);
@@ -46,7 +46,7 @@ try {
     $conn = Database::getConnection();
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
-    die(json_encode(array('status' => 1)));
+    die(json_encode(array('status' => $id_player)));
 } catch (GameException $e) {
     GameException::exitMessage($e->getCode());
 }
