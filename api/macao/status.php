@@ -51,8 +51,13 @@ try {
             $table_item = array(
                 "status" => 0,
                 "name" => $row['name'],
-                "cards" => 0
+                "cards" => 0,
+                "details" => json_decode($row['details'],true)
             );
+            if(isset($table_item['details']['pause']))
+                $table_item['pause'] = $table_item['details']['pause'];
+            else $table_item['pause'] = false;
+
             if ($macao->getPlayerCount() < 2) {
                 if ($macao->getHost() == $row['id'])
                     $table_item['status'] = 2;
@@ -89,6 +94,10 @@ try {
         $result['players'] = array_merge($result['players'], $players_slice);
     }
 // carti de pe masa, carti jucatori, runda, detalii
+
+    if(isset($result['details']['kick']))
+        $result['details']['kick'] = count($result['details']['kick'])*10 + $macao->getPlayerCount();
+    else $result['details']['kick'] = $macao->getPlayerCount();
 
     die(json_encode($result));
 } catch (GameException $e) {

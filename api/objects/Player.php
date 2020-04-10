@@ -15,6 +15,7 @@ class Player
     private $id_table = null;
     private $name = "Player";
     private $cards = [];
+    private $details = [];
 
     /**
      * Player constructor.
@@ -55,6 +56,7 @@ class Player
             $this->id_table = $row['id_table'];
             $this->name = $row['name'];
             $this->cards = json_decode($row['cards'], true);
+            $this->details = json_decode($row['details'], true);
         } else throw new GameException("Unable to read player with id $id, $stmt->errno: $stmt->error", 1);
     }
 
@@ -81,7 +83,7 @@ class Player
      */
     public function create()
     {
-        $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name, cards) VALUES (NULL, ?, ?, '{}')";
+        $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name) VALUES (NULL, ?, ?)";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param('is', $this->id_table, $this->name);
 
@@ -98,10 +100,11 @@ class Player
     public function update()
     {
         $cards = json_encode($this->cards);
+        $details = json_encode($this->details);
         if ($cards == null) $cards = "{}";
-        $query = "UPDATE " . Player::$DBTable_name . " SET id_table = ?, cards = ? WHERE id = ?";
+        $query = "UPDATE " . Player::$DBTable_name . " SET id_table = ?, cards = ?, details = ? WHERE id = ?";
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('isi', $this->id_table, $cards, $this->id);
+        $stmt->bind_param('issi', $this->id_table, $cards, $details, $this->id);
 
         if (!$stmt->execute())
             throw new GameException("Unable to update player with id: $this->id, $stmt->errno: $stmt->error", 6);
@@ -221,5 +224,21 @@ class Player
     {
         $this->cards = array_values(array_diff($this->cards, $cards));
         return count($this->cards);
+    }
+
+    /**
+     * @return array
+     */
+    public function getDetails(): array
+    {
+        return $this->details;
+    }
+
+    /**
+     * @param array $details
+     */
+    public function setDetails(array $details): void
+    {
+        $this->details = $details;
     }
 }

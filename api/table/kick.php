@@ -32,7 +32,7 @@ try {
 
     if (!isset($details['kick']))
         $details['kick'] = array();
-    elseif (array_search($player->getId(), $details['kick']) >= 0)
+    elseif (array_search($player->getId(), $details['kick']) !== false)
         die(json_encode(array("status" => 0)));
 
     if ($game->getPlayerCount() - 2 > count($details['kick'])) {
