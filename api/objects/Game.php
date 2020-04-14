@@ -20,6 +20,7 @@ class Game
     private $details = [];
     private $change_at = 0;
     private $rules = [];
+    private $chat = [];
     private $host = 0;
 
     public function __construct()
@@ -52,9 +53,27 @@ class Game
             $this->round = json_decode($row['round'], true);
             $this->deck = json_decode($row['deck'], true);
             $this->details = json_decode($row['details'], true);
+            $this->chat = json_decode($row['chat'], true);
             $this->change_at = strtotime($row['change_at']);
             if ($read_rules) $this->rules = json_decode($row['rules'], true);
             $this->host = $row['host'];
+        } else throw new GameException("Unable to read game data with id: $id, $stmt->errno: $stmt->error", 2);
+    }
+
+    public function readChat($id)
+    {
+        $query = "SELECT chat FROM " . Game::$DBTable_name . " WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('i', $id);
+
+        if ($stmt->execute()) {
+            $result = $stmt->get_result();
+            if ($result->num_rows == 0)
+                throw new GameException("Game data with id $id don't exist in database.", 19);
+            $row = $result->fetch_assoc();
+
+            $this->id = $id;
+            $this->chat = json_decode($row['chat'], true);
         } else throw new GameException("Unable to read game data with id: $id, $stmt->errno: $stmt->error", 2);
     }
 
@@ -89,7 +108,22 @@ class Game
         $stmt->bind_param('ssssi', $cards, $round, $deck, $details, $this->id);
 
         if (!$stmt->execute())
-            throw new GameException("Unable to update game data with id: $this->id, $stmt->errno: $stmt->error", 3);
+            throw new GameException("Unable to update game chat for id: $this->id, $stmt->errno: $stmt->error", 3);
+    }
+
+    /**
+     * @throws GameException
+     */
+    public function updateChat()
+    {
+        $chat = json_encode($this->chat);
+
+        $query = "UPDATE " . Game::$DBTable_name . " SET chat = ? WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('si', $chat, $this->id);
+
+        if (!$stmt->execute())
+            throw new GameException("Unable to update game chat for id: $this->id, $stmt->errno: $stmt->error", 3);
     }
 
     private function nextPlayer(bool $macao)
@@ -154,6 +188,29 @@ class Game
     }
 
     /**
+     * @return array
+     */
+    public function getChat(): array
+    {
+        return $this->chat;
+    }
+
+    /**
+     * @param int $timestamp
+     * @param string $playerName
+     * @param string $text
+     */
+    public function AddToChat($timestamp, $playerName, $text): void
+    {
+        $newMessage = array("timestamp" => $timestamp,
+            "playerName" => $playerName,
+            "text" => $text);
+        array_unshift($this->chat, $newMessage);
+        if(count($this->chat) > 15)
+            unset($this->chat[15]);
+    }
+
+    /**
      * @param array $cards
      */
     protected function addCards(array $cards)
@@ -199,9 +256,9 @@ class Game
     public function takeCards(int $count, bool $firstCard = false): array
     {
         if ($count > count($this->deck)) {
-            $this->deck = array_merge($this->deck,array_splice($this->cards, 1));
+            $this->deck = array_merge($this->deck, array_splice($this->cards, 1));
             if (!shuffle($this->deck))
-                Debug::Log("Shuffle deck + old cards failed",__FILE__,"WARNING");
+                Debug::Log("Shuffle deck + old cards failed", __FILE__, "WARNING");
         }
 
         if ($count <= count($this->deck)) {

@@ -35,6 +35,7 @@ try {
     elseif (array_search($player->getId(), $details['kick']) !== false)
         die(json_encode(array("status" => 0)));
 
+    $update_time = false;
     if ($game->getPlayerCount() - 2 > count($details['kick'])) {
         array_push($details['kick'], $player->getId());
     } else {
@@ -52,11 +53,12 @@ try {
         $table->update();
         $kick_player->delete();
 
+        $update_time = true;
         unset($details['kick']);
     }
 
     $game->setDetails($details);
-    $game->update(true);
+    $game->update($update_time, false, true);
 
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);

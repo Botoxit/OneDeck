@@ -36,6 +36,7 @@ try {
     $result['cards'] = array_slice($macao->getCards(), 0, 10);
     $result['deck'] = $macao->getDeckCount();
     $result['details'] = $macao->getDetails();
+    $result['chat'] = $macao->getChat();
     if ($macao->getPlayerCount() < 2)
         $result['details']['new_game'] = -1;
     $result['status'] = 0; // it's not your turn or you are not ready
@@ -96,8 +97,8 @@ try {
 // carti de pe masa, carti jucatori, runda, detalii
 
     if(isset($result['details']['kick']))
-        $result['details']['kick'] = count($result['details']['kick'])*10 + $macao->getPlayerCount();
-    else $result['details']['kick'] = $macao->getPlayerCount();
+        $result['details']['kick'] = count($result['details']['kick'])*10 + $macao->getPlayerCount() - 1;
+    else $result['details']['kick'] = $macao->getPlayerCount() - 1;
 
     die(json_encode($result));
 } catch (GameException $e) {
