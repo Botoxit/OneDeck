@@ -2,6 +2,7 @@
 
 require_once CORE . 'Controller.php';
 require_once CORE . 'Database.php';
+require_once API . 'objects' . DIRECTORY_SEPARATOR . 'GameException.php';
 
 class apiController extends Controller
 {
@@ -12,7 +13,6 @@ class apiController extends Controller
 
     public function wakeUp(float $ver = 0, int $id_player = 0)
     {
-        include_once API . 'objects' . DIRECTORY_SEPARATOR . 'GameException.php';
         include_once API . 'objects' . DIRECTORY_SEPARATOR . 'Player.php';
         header('Content-Type: application/json');
         if ($id_player > 0) {
@@ -26,7 +26,7 @@ class apiController extends Controller
                 GameException::exitMessage($e->getCode());
             }
         }
-        if ($ver < 1.2)
+        if ($ver < 1.5)
             GameException::exitMessage(22);
         die(json_encode(array("status" => 0)));
     }
