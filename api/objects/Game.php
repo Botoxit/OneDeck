@@ -263,7 +263,7 @@ class Game
 
         if ($count <= count($this->deck)) {
             $invalidFirst = array(5, 6, 21, 22, 23, 24, 31, 32, 33, 34);
-            if ($firstCard && array_search($this->deck[0], $invalidFirst) != false) {
+            if ($firstCard && (array_search($this->deck[0], $invalidFirst) != false)) {
                 $cards = [];
                 for ($i = 1; $i < count($this->deck); $i++) {
                     if (array_search($this->deck[$i], $invalidFirst) == false) {

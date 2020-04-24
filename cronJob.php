@@ -17,5 +17,5 @@ if ($stmt->execute()) {
     else die();
 } else $message = "I can't delete inactive tables $stmt->errno: $stmt->error";
 
-$date = date("Y-m-d h:m:s");
+$date = date("Y-m-d H:i:s");
 error_log("[$date] " . $message . PHP_EOL, 3, "cronJob.log");
