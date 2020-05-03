@@ -18,15 +18,15 @@ include_once API . 'objects/Table.php';
 include_once API . 'objects/Player.php';
 include_once API . 'objects/Game.php';
 
-if(!isset($_SESSION['id_player']))
+if (!isset($_SESSION['id_player']))
     die(json_encode(array("status" => -21, "message" => "id_player is not set!")));
 
 $conn = Database::getConnection();
 $player = new Player();
+$game = new Game();
 
 try {
     $player->readOne($_SESSION['id_player']);
-    $game = new Game();
     $game->readOne($player->getIdTable());
     $details = $game->getDetails();
 
@@ -51,7 +51,10 @@ try {
         if ($game->getHost() == $kick_player->getId())
             $table->newHost();
         $table->update();
-        $kick_player->delete();
+
+        try {
+            $kick_player->delete();
+        } catch (GameException $ex) { }
 
         $update_time = true;
         unset($details['kick']);
