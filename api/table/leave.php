@@ -41,10 +41,10 @@ try {
         $table->deleteTable();
     } else {
         $game = new Game();
-        $game->readOne($player->getIdTable());
+        $game->readOne($id_table);
         $resetTime = $game->getRound() == $player->getId();
         $game->deletePlayer($player);
-        $game->update($resetTime);
+        $game->update($resetTime,false,true);
 
         $table->setPlayersLimit($playerLimit);
         if ($game->getHost() == $player->getId())
