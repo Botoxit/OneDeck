@@ -170,19 +170,26 @@ class Game
      */
     public function deletePlayer(Player $player)
     {
-        if ($player->getId() == $this->getRound() && isset($this->details['kick']))
+        if ($player->getId() == $this->getRound() && isset($this->details['kick'])) {
             unset($this->details['kick']);
-        array_push($this->deck, $player->getCards());
+        }
+        $cards = $player->getCards();
+        if (!empty($cards['ready']))
+            unset($cards['ready']);
+        array_push($this->deck, array_values($cards));
         $key = array_search($player->getId(), $this->round);
-        if ($key >= 0) {
-            array_splice($this->round, $key, 1);
+        Debug::Log("deletePlayer script " . $key, __FILE__);
+        if ($key !== false) {
+            unset($this->round[$key]);
+            $this->round = array_values($this->round);
         }
     }
 
     /**
      * @return array
      */
-    public function getRules(): array
+    public
+    function getRules(): array
     {
         return $this->rules;
     }
@@ -190,7 +197,8 @@ class Game
     /**
      * @return array
      */
-    public function getChat(): array
+    public
+    function getChat(): array
     {
         return $this->chat;
     }
@@ -200,30 +208,34 @@ class Game
      * @param string $playerName
      * @param string $text
      */
-    public function AddToChat($timestamp, $playerName, $text): void
+    public
+    function AddToChat($timestamp, $playerName, $text): void
     {
         $newMessage = array("timestamp" => $timestamp,
             "playerName" => $playerName,
             "text" => $text);
         array_unshift($this->chat, $newMessage);
-        if(count($this->chat) > 15)
+        if (count($this->chat) > 15)
             unset($this->chat[15]);
     }
 
     /**
      * @param array $cards
      */
-    protected function addCards(array $cards)
+    protected
+    function addCards(array $cards)
     {
         $this->cards = array_merge($cards, $this->cards);
     }
 
-    protected function setCards(array $cards)
+    protected
+    function setCards(array $cards)
     {
         $this->cards = $cards;
     }
 
-    protected function setDeck(array $deck)
+    protected
+    function setDeck(array $deck)
     {
         $this->deck = array_values($deck);
     }
@@ -231,19 +243,22 @@ class Game
     /**
      * @return int
      */
-    public function getRound(): int
+    public
+    function getRound(): int
     {
         if (empty($this->round))
             return 0;
         return $this->round[0];
     }
 
-    protected function setRound(array $round)
+    protected
+    function setRound(array $round)
     {
         $this->round = $round;
     }
 
-    public function getPlayerCount(): int
+    public
+    function getPlayerCount(): int
     {
         return count($this->round);
     }
@@ -253,7 +268,8 @@ class Game
      * @param bool $firstCard
      * @return array
      */
-    public function takeCards(int $count, bool $firstCard = false): array
+    public
+    function takeCards(int $count, bool $firstCard = false): ?array
     {
         if ($count > count($this->deck)) {
             $this->deck = array_merge($this->deck, array_splice($this->cards, 1));
@@ -263,8 +279,9 @@ class Game
 
         if ($count <= count($this->deck)) {
             $invalidFirst = array(5, 6, 21, 22, 23, 24, 31, 32, 33, 34);
-            if ($firstCard && (array_search($this->deck[0], $invalidFirst) != false)) {
+            if ($firstCard && (array_search($this->deck[0], $invalidFirst) !== false)) {
                 $cards = [];
+                Debug::Log("firstCard is " . $this->deck[0], __FILE__);
                 for ($i = 1; $i < count($this->deck); $i++) {
                     if (array_search($this->deck[$i], $invalidFirst) == false) {
                         array_push($cards, $this->deck[$i]);
@@ -274,14 +291,16 @@ class Game
                 }
             }
             return array_splice($this->deck, 0, $count);
+        } else {
+            return array_splice($this->deck, 0);
         }
-        return null;
     }
 
     /**
      * @return array
      */
-    public function getDetails(): array
+    public
+    function getDetails(): array
     {
         return $this->details;
     }
@@ -289,12 +308,14 @@ class Game
     /**
      * @param array $details
      */
-    public function setDetails(array $details): void
+    public
+    function setDetails(array $details): void
     {
         $this->details = $details;
     }
 
-    public function getDeckCount()
+    public
+    function getDeckCount()
     {
         return count($this->deck);
     }
@@ -302,7 +323,8 @@ class Game
     /**
      * @return string
      */
-    public function getHost(): string
+    public
+    function getHost(): string
     {
         return $this->host;
     }
