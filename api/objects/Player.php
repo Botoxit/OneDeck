@@ -222,7 +222,8 @@ class Player
      */
     public function removeCards(array $cards)
     {
-        $this->cards = array_values(array_diff($this->cards, $cards));
+        $player_cards = array_diff($this->cards, $cards);
+        $this->cards = array_values($player_cards);
         return count($this->cards);
     }
 
