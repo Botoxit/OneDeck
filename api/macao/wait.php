@@ -21,7 +21,7 @@ $player = new Player();
 
 try {
     $player->readOne($_SESSION['id_player']);
-    $macao->readOne($player->getIdTable());
+    $macao->readOne($player->getIdTable(), $player->getIdTable() == 1);
 
     if ($macao->getRound() != $player->getId())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
