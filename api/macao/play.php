@@ -31,19 +31,7 @@ try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable());
     if ($macao->getHost() == $player->getId()) {
-        $query = "SELECT count(*) as \"ready\" , (SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = " . $player->getIdTable() . ") as \"total\" 
-                            FROM " . Player::getTableName() . " WHERE id_table = " . $player->getIdTable() . " AND JSON_EXTRACT(cards,'$.ready') = true";
-        $stmt = $conn->prepare($query);
-
-        if (!$stmt->execute())
-            throw new GameException("Unable to read ready players for table id: " . $player->getIdTable() . ", $stmt->errno: $stmt->error", 5);
-        $result = $stmt->get_result();
-        if (!$result)
-            throw new GameException("Players for table with id " . $player->getIdTable() . " don't exist in database.", 19);
-        $row = $result->fetch_assoc();
-        $ready_players = $row['ready'] + 1;
-        $total_players = $row['total'];
-        if ($ready_players == $total_players && $total_players > 1) {
+        if ($macao->allPlayersReady()) {
             $macao->new_game($player);
             $macao->update(true,false, true);
             if (!$conn->commit())
@@ -54,6 +42,12 @@ try {
         if ($macao->getPlayerCount() < 2) {
             $ready = $player->ready();
             $player->update();
+
+            if($player->getIdTable() == 1 && $macao->allPlayersReady()) {
+                $macao->new_game($player);
+                $macao->update(true,false, true);
+            }
+
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
             if ($ready)
