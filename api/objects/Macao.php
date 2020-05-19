@@ -224,6 +224,10 @@ class Macao extends Game
         }
 
         $this->setRound($round);
+        if ($this->getRound() == 1) {
+            $this->nextPlayer($this->boot());
+        }
+
         $this->setDetails(array('new_game' => $this->getPlayerCount()));
 
         $this->setCards($this->takeCards(1, true));
@@ -232,7 +236,7 @@ class Macao extends Game
     protected function nextPlayer(bool $macao)
     {
         parent::nextPlayer($macao);
-        if ($this->getPlayerCount() > 1  && $this->getRound() == 1)
+        if ($this->getPlayerCount() > 1 && $this->getRound() == 1)
             $this->nextPlayer($this->boot());
     }
 
@@ -245,10 +249,10 @@ class Macao extends Game
             $tableSymbol = $details['changeSymbol'];
             unset($details['changeSymbol']);
         } else $tableSymbol = $this->getFirstTableCard() % 10;
-        $tableNumber = $this->getFirstTableCard() / 10;
+        $tableNumber = intdiv($this->getFirstTableCard(), 10);
 
         $boot = new Player();
-        $boot->readOne(0);
+        $boot->readOne(1);
 
         $cards = $boot->getCards();
 
@@ -261,7 +265,7 @@ class Macao extends Game
         $valid_cards = [];
 
         foreach ($cards as $card) {
-            switch ($card / 10) {
+            switch (intdiv($card, 10)) {
                 default:
                     array_push($other_cards, $card);
                     break;
@@ -286,7 +290,7 @@ class Macao extends Game
             if (count($take_cards) > 0) {
                 array_push($valid_cards, $take_cards[0]);
                 for ($i = 1; $i < count($take_cards); $i++) {
-                    if ($take_cards[$i] / 10 == $take_cards[0] / 10)
+                    if (intdiv($take_cards[$i], 10) == intdiv($take_cards[0], 10))
                         array_push($valid_cards, $take_cards[$i]);
                 }
             } else $valid_cards = $this->bootStopCards($stop_cards, count($cards));
@@ -297,7 +301,7 @@ class Macao extends Game
                     $valid_cards = $wait_cards;
                 } else {
                     $valid_cards = $this->bootStopCards($stop_cards, count($cards));
-                    if(empty($valid_cards)) { // wait
+                    if (empty($valid_cards)) { // wait
                         if ($details['toWait'] > 1) {
                             if (!isset($details['waiting']))
                                 $details['waiting'] = array();
@@ -312,14 +316,14 @@ class Macao extends Game
                 $other_cards = array_merge($other_cards, $wait_cards);
                 $frequency = [];
                 for ($i = 0; $i < count($other_cards); $i++) {
-                    if (empty($frequency[$other_cards[$i] / 10]))
-                        $frequency[$other_cards[$i] / 10] = array($other_cards[$i]);
-                    else array_push($frequency[$other_cards[$i] / 10], $other_cards[$i]);
+                    if (empty($frequency[intdiv($other_cards[$i], 10)]))
+                        $frequency[intdiv($other_cards[$i], 10)] = array($other_cards[$i]);
+                    else array_push($frequency[intdiv($other_cards[$i], 10)], $other_cards[$i]);
                 }
-                Debug::Log("json frequency boot: " . json_encode($frequency), __FILE__);
+                //Debug::Log("json frequency boot: " . json_encode($frequency), __FILE__);
 
                 uasort($frequency, array($this, 'bootStopCards'));
-                Debug::Log("json sorted frequency boot: " . json_encode($frequency), __FILE__);
+                //Debug::Log("json sorted frequency boot: " . json_encode($frequency), __FILE__);
 
                 foreach ($frequency as $card_val => $cards) {
                     if ($card_val == $tableNumber) {
@@ -348,7 +352,7 @@ class Macao extends Game
                         if (count($take_cards) > 0) {
                             array_push($valid_cards, $take_cards[0]);
                             for ($i = 1; $i < count($take_cards); $i++) {
-                                if ($take_cards[$i] / 10 == $take_cards[0] / 10)
+                                if (intdiv($take_cards[$i], 10) == intdiv($take_cards[0], 10))
                                     array_push($valid_cards, $take_cards[$i]);
                             }
                         } else $valid_cards = $this->bootStopCards($stop_cards, count($cards));
@@ -395,8 +399,8 @@ class Macao extends Game
         if (count($a) == count($b))
             return 0;
         if (count($a) > count($b))
-            return 1;
-        return -1;
+            return -1;
+        return 1;
     }
 
     private function bootTakeCards($boot)
