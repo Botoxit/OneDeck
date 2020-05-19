@@ -17,6 +17,7 @@ class apiController extends Controller
         header('Content-Type: application/json');
         if ($id_player > 0) {
             try {
+                $_SESSION['id_player'] = $id_player;
                 $player = new Player();
                 $player->readOne($id_player);
                 include_once(API . 'table' . DIRECTORY_SEPARATOR . 'leave.php');
@@ -26,7 +27,7 @@ class apiController extends Controller
                 GameException::exitMessage($e->getCode());
             }
         }
-        if ($ver < 1.6)
+        if ($ver < 1.9)
             GameException::exitMessage(22);
         die(json_encode(array("status" => 0)));
     }
@@ -38,7 +39,7 @@ class apiController extends Controller
         } else die(json_encode(array("status" => -1)));
     }
 
-    public function macao(string $action)
+    public function macao(string $action, int $id_player = 0)
     {
         if (file_exists(API . 'macao' . DIRECTORY_SEPARATOR . $action . '.php')) {
             require_once API . 'macao' . DIRECTORY_SEPARATOR . $action . '.php';
