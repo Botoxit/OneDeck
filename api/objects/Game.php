@@ -126,7 +126,7 @@ class Game
             throw new GameException("Unable to update game chat for id: $this->id, $stmt->errno: $stmt->error", 3);
     }
 
-    private function nextPlayer(bool $macao)
+    protected function nextPlayer(bool $macao)
     {
         $current_player = array_splice($this->round, 0, 1);
         if (!$macao) {
@@ -176,7 +176,12 @@ class Game
         $cards = $player->getCards();
         if (!empty($cards['ready']))
             unset($cards['ready']);
-        array_push($this->deck, array_values($cards));
+        if (count($cards) > 0)
+            array_push($this->deck, array_values($cards));
+        else {
+            if (isset($this->details['new_game']) && $this->details['new_game'] > 0)
+                $this->details['new_game'] = $this->details['new_game'] - 1;
+        }
         $key = array_search($player->getId(), $this->round);
         Debug::Log("deletePlayer script " . $key, __FILE__);
         if ($key !== false) {
@@ -188,8 +193,7 @@ class Game
     /**
      * @return array
      */
-    public
-    function getRules(): array
+    public function getRules(): array
     {
         return $this->rules;
     }
@@ -197,8 +201,7 @@ class Game
     /**
      * @return array
      */
-    public
-    function getChat(): array
+    public function getChat(): array
     {
         return $this->chat;
     }
@@ -207,35 +210,35 @@ class Game
      * @param int $timestamp
      * @param string $playerName
      * @param string $text
+     * @return bool
      */
-    public
-    function AddToChat($timestamp, $playerName, $text): void
+    public function AddToChat($timestamp, $playerName, $text): bool
     {
+        if (count($this->chat) > 0 && $this->chat[0]["playerName"] == $playerName && $this->chat[0]["text"] == $text)
+            return false;
         $newMessage = array("timestamp" => $timestamp,
             "playerName" => $playerName,
             "text" => $text);
         array_unshift($this->chat, $newMessage);
         if (count($this->chat) > 15)
             unset($this->chat[15]);
+        return true;
     }
 
     /**
      * @param array $cards
      */
-    protected
-    function addCards(array $cards)
+    protected function addCards(array $cards)
     {
         $this->cards = array_merge($cards, $this->cards);
     }
 
-    protected
-    function setCards(array $cards)
+    protected function setCards(array $cards)
     {
         $this->cards = $cards;
     }
 
-    protected
-    function setDeck(array $deck)
+    protected function setDeck(array $deck)
     {
         $this->deck = array_values($deck);
     }
@@ -243,22 +246,19 @@ class Game
     /**
      * @return int
      */
-    public
-    function getRound(): int
+    public function getRound(): int
     {
         if (empty($this->round))
             return 0;
         return $this->round[0];
     }
 
-    protected
-    function setRound(array $round)
+    protected function setRound(array $round)
     {
         $this->round = $round;
     }
 
-    public
-    function getPlayerCount(): int
+    public function getPlayerCount(): int
     {
         return count($this->round);
     }
@@ -268,8 +268,7 @@ class Game
      * @param bool $firstCard
      * @return array
      */
-    public
-    function takeCards(int $count, bool $firstCard = false): ?array
+    public function takeCards(int $count, bool $firstCard = false): array
     {
         if ($count > count($this->deck)) {
             $this->deck = array_merge($this->deck, array_splice($this->cards, 1));
@@ -299,8 +298,7 @@ class Game
     /**
      * @return array
      */
-    public
-    function getDetails(): array
+    public function getDetails(): array
     {
         return $this->details;
     }
@@ -308,14 +306,12 @@ class Game
     /**
      * @param array $details
      */
-    public
-    function setDetails(array $details): void
+    public function setDetails(array $details): void
     {
         $this->details = $details;
     }
 
-    public
-    function getDeckCount()
+    public function getDeckCount()
     {
         return count($this->deck);
     }
@@ -323,9 +319,30 @@ class Game
     /**
      * @return string
      */
-    public
-    function getHost(): string
+    public function getHost(): string
     {
         return $this->host;
+    }
+
+    /**
+     * @throws GameException
+     */
+    public function allPlayersReady() {
+        $query = "SELECT count(*) as \"ready\" , (SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = " . $this->id . ") as \"total\" 
+                            FROM " . Player::getTableName() . " WHERE id_table = " . $this->id . " AND JSON_EXTRACT(cards,'$.ready') = true";
+        $stmt = $this->conn->prepare($query);
+
+        if (!$stmt->execute())
+            throw new GameException("Unable to read ready players for table id: " . $this->id . ", $stmt->errno: $stmt->error", 5);
+        $result = $stmt->get_result();
+        if (!$result)
+            throw new GameException("Players for table with id " . $this->id . " don't exist in database.", 19);
+        $row = $result->fetch_assoc();
+        $ready_players = $row['ready'] + 1;
+        $total_players = $row['total'];
+
+        if ($ready_players == $total_players && $total_players > 1)
+            return true;
+        return false;
     }
 }
