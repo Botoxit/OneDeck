@@ -223,12 +223,13 @@ class Macao extends Game
             }
         }
 
+
         $this->setRound($round);
+        $this->setDetails(array('new_game' => $this->getPlayerCount()));
+
         if ($this->getRound() == 1) {
             $this->nextPlayer($this->boot());
         }
-
-        $this->setDetails(array('new_game' => $this->getPlayerCount()));
 
         $this->setCards($this->takeCards(1, true));
     }

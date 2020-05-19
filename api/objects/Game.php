@@ -88,7 +88,7 @@ class Game
         if (!$new_game) {
             $this->nextPlayer($macao);
         }
-        if ($macao && count($this->round) == 1) {
+        if (count($this->round) == 1) {
             $lastPlayer = new Player();
             $lastPlayer->readOne($this->getRound());
             if (!isset($this->details['rank']))
