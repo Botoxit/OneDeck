@@ -18,8 +18,11 @@ include_once API . 'objects/Table.php';
 include_once API . 'objects/Macao.php';
 include_once API . 'objects/Player.php';
 
-if (!isset($_SESSION['id_player']))
-    die(json_encode(array("status" => -21, "message" => "id_player is not set!")));
+if (!isset($_SESSION['id_player'])) {
+    if (isset($id_player) && $id_player > 0)
+        $_SESSION['id_player'] = $id_player;
+    else die(json_encode(array("status" => -21, "message" => "id_player is not set!")));
+}
 
 $conn = Database::getConnection();
 $macao = new Macao();
@@ -53,9 +56,9 @@ try {
                 "status" => 0,
                 "name" => $row['name'],
                 "cards" => 0,
-                "details" => json_decode($row['details'],true)
+                "details" => json_decode($row['details'], true)
             );
-            if(isset($table_item['details']['pause']))
+            if (isset($table_item['details']['pause']))
                 $table_item['pause'] = $table_item['details']['pause'];
             else $table_item['pause'] = false;
 
@@ -96,8 +99,8 @@ try {
     }
 // carti de pe masa, carti jucatori, runda, detalii
 
-    if(isset($result['details']['kick']))
-        $result['details']['kick'] = count($result['details']['kick'])*10 + $macao->getPlayerCount() - 1;
+    if (isset($result['details']['kick']))
+        $result['details']['kick'] = count($result['details']['kick']) * 10 + $macao->getPlayerCount() - 1;
     else $result['details']['kick'] = $macao->getPlayerCount() - 1;
 
     die(json_encode($result));
