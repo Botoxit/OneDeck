@@ -85,8 +85,6 @@ class Game
      */
     public function update(bool $update_time, bool $macao = false, bool $new_game = false)
     {
-        $cards = json_encode($this->cards);
-
         if (!$new_game) {
             $this->nextPlayer($macao);
         }
@@ -97,6 +95,7 @@ class Game
                 $this->details['rank'] = array(array('id' => $lastPlayer->getId(), 'name' => $lastPlayer->getName()));
             else array_push($this->details['rank'], array('id' => $lastPlayer->getId(), 'name' => $lastPlayer->getName()));
         }
+        $cards = json_encode($this->cards);
         $round = json_encode($this->round);
         $deck = json_encode($this->deck);
         $details = json_encode($this->details);
@@ -183,7 +182,7 @@ class Game
                 $this->details['new_game'] = $this->details['new_game'] - 1;
         }
         $key = array_search($player->getId(), $this->round);
-        Debug::Log("deletePlayer script " . $key, __FILE__);
+        //Debug::Log("deletePlayer script " . $key, __FILE__);
         if ($key !== false) {
             unset($this->round[$key]);
             $this->round = array_values($this->round);
@@ -280,7 +279,7 @@ class Game
             $invalidFirst = array(5, 6, 21, 22, 23, 24, 31, 32, 33, 34);
             if ($firstCard && (array_search($this->deck[0], $invalidFirst) !== false)) {
                 $cards = [];
-                Debug::Log("firstCard is " . $this->deck[0], __FILE__);
+                //Debug::Log("firstCard is " . $this->deck[0], __FILE__);
                 for ($i = 1; $i < count($this->deck); $i++) {
                     if (array_search($this->deck[$i], $invalidFirst) == false) {
                         array_push($cards, $this->deck[$i]);

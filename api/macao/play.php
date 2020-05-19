@@ -18,7 +18,7 @@ include_once API . 'objects/Table.php';
 include_once API . 'objects/Macao.php';
 include_once API . 'objects/Player.php';
 
-if(!isset($_SESSION['id_player']))
+if (!isset($_SESSION['id_player']))
     die(json_encode(array("status" => -21, "message" => "id_player is not set!")));
 
 $conn = Database::getConnection();
@@ -33,7 +33,7 @@ try {
     if ($macao->getHost() == $player->getId()) {
         if ($macao->allPlayersReady()) {
             $macao->new_game($player);
-            $macao->update(true,false, true);
+            $macao->update(true, false, true);
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
             die(json_encode(array('status' => 2)));
@@ -43,9 +43,9 @@ try {
             $ready = $player->ready();
             $player->update();
 
-            if($player->getIdTable() == 1 && $macao->allPlayersReady()) {
+            if ($player->getIdTable() == 1 && $macao->allPlayersReady()) {
                 $macao->new_game($player);
-                $macao->update(true,false, true);
+                $macao->update(true, false, true);
             }
 
             if (!$conn->commit())
