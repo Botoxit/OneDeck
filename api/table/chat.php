@@ -31,7 +31,9 @@ try {
 
     $timestamp = strtotime("now");
 
-    $game->AddToChat($timestamp, $player->getName(), $post->text);
+    if(!$game->AddToChat($timestamp, $player->getName(), $post->text))
+        die(json_encode(array("status" => 0)));
+
     $game->updateChat();
 
     if (!$conn->commit())
