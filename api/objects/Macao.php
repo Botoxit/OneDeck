@@ -228,4 +228,191 @@ class Macao extends Game
 
         $this->setCards($this->takeCards(1, true));
     }
+
+    protected function nextPlayer(bool $macao)
+    {
+        parent::nextPlayer($macao);
+        if ($this->getPlayerCount() > 1  && $this->getRound() == 1)
+            $this->nextPlayer($this->boot());
+    }
+
+
+    public function boot()
+    {
+        $details = $this->getDetails();
+
+        if (!empty($details['changeSymbol'])) {
+            $tableSymbol = $details['changeSymbol'];
+            unset($details['changeSymbol']);
+        } else $tableSymbol = $this->getFirstTableCard() % 10;
+        $tableNumber = $this->getFirstTableCard() / 10;
+
+        $boot = new Player();
+        $boot->readOne(0);
+
+        $cards = $boot->getCards();
+
+        $stop_cards = [];
+        $take_cards = [];
+        $switch_cards = [];
+        $wait_cards = [];
+        $other_cards = [];
+
+        $valid_cards = [];
+
+        foreach ($cards as $card) {
+            switch ($card / 10) {
+                default:
+                    array_push($other_cards, $card);
+                    break;
+                case 0:
+                case 2:
+                case 3:
+                    array_push($take_cards, $card);
+                    break;
+                case 1:
+                    array_push($switch_cards, $card);
+                    break;
+                case 4:
+                    array_push($wait_cards, $card);
+                    break;
+                case 7:
+                    array_push($stop_cards, $card);
+            }
+        }
+
+        // If boot needs to take cards
+        if (!empty($details['takeCards'])) {
+            if (count($take_cards) > 0) {
+                array_push($valid_cards, $take_cards[0]);
+                for ($i = 1; $i < count($take_cards); $i++) {
+                    if ($take_cards[$i] / 10 == $take_cards[0] / 10)
+                        array_push($valid_cards, $take_cards[$i]);
+                }
+            } else $valid_cards = $this->bootStopCards($stop_cards, count($cards));
+        } else {
+            // If boot needs to wait
+            if (!empty($details['toWait'])) {
+                if (count($wait_cards) > 0) {
+                    $valid_cards = $wait_cards;
+                } else {
+                    $valid_cards = $this->bootStopCards($stop_cards, count($cards));
+                    if(empty($valid_cards)) { // wait
+                        if ($details['toWait'] > 1) {
+                            if (!isset($details['waiting']))
+                                $details['waiting'] = array();
+                            $details['waiting'][$boot->getId()] = $details['toWait'] - 1;
+                            unset($details['toWait']);
+                        } else unset($details['toWait']);
+                        $this->setDetails($details);
+                        return false;
+                    }
+                }
+            } else {
+                $other_cards = array_merge($other_cards, $wait_cards);
+                $frequency = [];
+                for ($i = 0; $i < count($other_cards); $i++) {
+                    if (empty($frequency[$other_cards[$i] / 10]))
+                        $frequency[$other_cards[$i] / 10] = array($other_cards[$i]);
+                    else array_push($frequency[$other_cards[$i] / 10], $other_cards[$i]);
+                }
+                Debug::Log("json frequency boot: " . json_encode($frequency), __FILE__);
+
+                uasort($frequency, array($this, 'bootStopCards'));
+                Debug::Log("json sorted frequency boot: " . json_encode($frequency), __FILE__);
+
+                foreach ($frequency as $card_val => $cards) {
+                    if ($card_val == $tableNumber) {
+                        $valid_cards = $cards;
+                    } else {
+                        foreach ($cards as $card) {
+                            if ($card % 10 == $tableSymbol) {
+                                $valid_cards = $cards;
+                                break;
+                            }
+                        }
+                        if (!empty($valid_cards)) {
+                            if (count($valid_cards) > 1 && $valid_cards[0] % 10 == $tableSymbol) {
+                                $aux = $valid_cards[0];
+                                $valid_cards[0] = $valid_cards[1];
+                                $valid_cards[1] = $aux;
+                            }
+                            break;
+                        }
+                    }
+                }
+                if (empty($valid_cards)) {
+                    if (count($switch_cards) > 0) {
+                        $valid_cards = $switch_cards;
+                    } else {
+                        if (count($take_cards) > 0) {
+                            array_push($valid_cards, $take_cards[0]);
+                            for ($i = 1; $i < count($take_cards); $i++) {
+                                if ($take_cards[$i] / 10 == $take_cards[0] / 10)
+                                    array_push($valid_cards, $take_cards[$i]);
+                            }
+                        } else $valid_cards = $this->bootStopCards($stop_cards, count($cards));
+                    }
+                }
+            }
+        }
+        $win = false;
+        if (empty($valid_cards)) {
+            $this->bootTakeCards($boot); // Take cards
+        } else {
+            if (!$this->verify($valid_cards, 0)) {
+                Debug::Log("Verify return false! " . json_encode($valid_cards), __FILE__, "ERROR");
+                $this->bootTakeCards($boot); // Take cards
+            } else {
+                if ($boot->removeCards($valid_cards) == 0) {
+                    $win = true;
+                    $details = $this->getDetails();
+                    if (!isset($details['rank']))
+                        $details['rank'] = array(array('id' => $boot->getId(), 'name' => $boot->getName()));
+                    else array_push($details['rank'], array('id' => $boot->getId(), 'name' => $boot->getName()));
+                    $this->setDetails($details);
+                }
+            }
+        }
+        $boot->update();
+        return $win;
+    }
+
+    private function bootStopCards($stop_cards, $total_cards)
+    {
+        $count = count($stop_cards);
+        if ($count <= 0)
+            return [];
+
+        if ($count == $total_cards)
+            return $stop_cards;
+
+        return array($stop_cards[0]);
+    }
+
+    public function compareCountArrays($a, $b)
+    {
+        if (count($a) == count($b))
+            return 0;
+        if (count($a) > count($b))
+            return 1;
+        return -1;
+    }
+
+    private function bootTakeCards($boot)
+    {
+        $details = $this->getDetails();
+        if (!empty($details['new_game']) && $details['new_game'] > 0) {
+            $cards = $this->takeCards(5);
+            $details['new_game'] = $details['new_game'] - 1;
+            $this->setDetails($details);
+        } elseif (empty($details['takeCards']))
+            $cards = $this->takeCards(1);
+        else {
+            $cards = $this->takeCards($details['takeCards']);
+            unset($details['takeCards']);
+            $this->setDetails($details);
+        }
+        $boot->addCards($cards);
+    }
 }
