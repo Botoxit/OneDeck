@@ -32,6 +32,7 @@ class GameException extends Exception
         "Table is full",                            // 20
         "id_player is empty",                       // 21
         "Update your application",                  // 22
+        "Unable to kick this player",               // 23
     );
 
     public static function exitMessage(int $code)
