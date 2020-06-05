@@ -32,7 +32,7 @@ class apiController extends Controller
         die(json_encode(array("status" => 0)));
     }
 
-    public function table(string $action)
+    public function table(string $action, int $id_player = 0)
     {
         if (file_exists(API . 'table' . DIRECTORY_SEPARATOR . $action . '.php')) {
             require_once API . 'table' . DIRECTORY_SEPARATOR . $action . '.php';
