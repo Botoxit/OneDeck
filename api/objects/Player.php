@@ -162,6 +162,14 @@ class Player
     }
 
     /**
+     * @param $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
      * Id for table getter
      * @return int|null
      */
