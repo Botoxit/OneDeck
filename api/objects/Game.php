@@ -176,7 +176,7 @@ class Game
         if (!empty($cards['ready']))
             unset($cards['ready']);
         if (count($cards) > 0)
-            array_push($this->deck, array_values($cards));
+            $this->deck = array_merge(array_values($this->deck), array_values($cards));
         else {
             if (isset($this->details['new_game']) && $this->details['new_game'] > 0)
                 $this->details['new_game'] = $this->details['new_game'] - 1;
@@ -326,7 +326,8 @@ class Game
     /**
      * @throws GameException
      */
-    public function allPlayersReady() {
+    public function allPlayersReady()
+    {
         $query = "SELECT count(*) as \"ready\" , (SELECT count(*) FROM " . Player::getTableName() . " WHERE id_table = " . $this->id . ") as \"total\" 
                             FROM " . Player::getTableName() . " WHERE id_table = " . $this->id . " AND JSON_EXTRACT(cards,'$.ready') = true";
         $stmt = $this->conn->prepare($query);
