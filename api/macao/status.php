@@ -53,6 +53,7 @@ try {
         $player_cards = json_decode($row['cards'], true);
         if ($row['id'] != $_SESSION['id_player']) {
             $table_item = array(
+                "id" => $row['id'],
                 "status" => 0,
                 "name" => $row['name'],
                 "cards" => 0,
