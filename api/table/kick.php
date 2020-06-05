@@ -28,39 +28,54 @@ $game = new Game();
 try {
     $player->readOne($_SESSION['id_player']);
     $game->readOne($player->getIdTable());
-    $details = $game->getDetails();
 
-    if (!isset($details['kick']))
-        $details['kick'] = array();
-    elseif (array_search($player->getId(), $details['kick']) !== false)
-        die(json_encode(array("status" => 0)));
+    if ($id_player > 0) {
+        if ($game->getHost() != $player->getId())
+            throw new GameException("Player [" . $player->getId() . "]" . $player->getName() . " try to kick player but is not the host " . $player->getIdTable(), 23);
 
-    $update_time = false;
-    if ($game->getPlayerCount() - 2 > count($details['kick'])) {
-        array_push($details['kick'], $player->getId());
-    } else {
         $kick_player = new Player();
-        $kick_player->readOne($game->getRound());
+        $kick_player->readOne($id_player);
+        if ($kick_player->getIdTable() != $player->getIdTable())
+            throw new GameException("Player [" . $player->getId() . "]" . $player->getName() . " try to kick player from other table " . $player->getIdTable() . " != " . $kick_player->getIdTable(), 23);
+    } else {
+        if($game->getPlayerCount() < 2)
+            die(json_encode(array("status" => 0, "message" => "You can't vote kick now.")));
 
+        if (!isset($details['kick']))
+            $details['kick'] = array();
+        elseif (array_search($player->getId(), $details['kick']) !== false)
+            die(json_encode(array("status" => 0)));
+
+        $update_time = false;
+        if ($game->getPlayerCount() - 2 > count($details['kick'])) {
+            array_push($details['kick'], $player->getId());
+        } else {
+            $kick_player = new Player();
+            $kick_player->readOne($game->getRound());
+        }
+        $game->setDetails($details);
+    }
+
+    if(isset($kick_player)) {
         $table = new Table();
         $table->readOne($player->getIdTable());
-
-        $game->deletePlayer($kick_player);
 
         $table->setPlayersLimit($table->getPlayersLimit() - 10);
         if ($game->getHost() == $kick_player->getId())
             $table->newHost();
         $table->update();
 
+        if($game->getPlayerCount() > 1)
+            $game->deletePlayer($kick_player);
+
         try {
             $kick_player->delete();
-        } catch (GameException $ex) { }
+        } catch (GameException $ex) {
+        }
 
         $update_time = true;
-        unset($details['kick']);
     }
 
-    $game->setDetails($details);
     $game->update($update_time, false, true);
 
     if (!$conn->commit())
