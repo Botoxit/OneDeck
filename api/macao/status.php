@@ -45,6 +45,7 @@ try {
     $result['status'] = 0; // it's not your turn or you are not ready
     $result['elapsedTime'] = strtotime("now") - $macao->getChangeAt();
     $result['players'] = array();
+    $result['host'] = $macao->getHost() == $_SESSION['id_player'];
     $i = 0;
     $me = 0;
 
