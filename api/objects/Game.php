@@ -94,6 +94,7 @@ class Game
             if (!isset($this->details['rank']))
                 $this->details['rank'] = array(array('id' => $lastPlayer->getId(), 'name' => $lastPlayer->getName()));
             else array_push($this->details['rank'], array('id' => $lastPlayer->getId(), 'name' => $lastPlayer->getName()));
+            $this->round = [];
         }
         $cards = json_encode($this->cards);
         $round = json_encode($this->round);
