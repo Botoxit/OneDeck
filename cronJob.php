@@ -15,7 +15,7 @@ date_default_timezone_set('Europe/Bucharest');
 $start_time = strtotime("now");
 
 /* =================================== Delete inactive tables ================================== */
-$query = "SELECT t.id, t.name, t.players_limit, t.created_at, g.round FROM `game` g join `tables_list` t ON t.id = g.id where timestampdiff(SECOND,`change_at`,CURRENT_TIMESTAMP) > 300 AND g.id > 1";
+$query = "SELECT t.id, t.name, t.players_limit, t.created_at, g.round FROM `game` g join `tables_list` t ON t.id = g.id where timestampdiff(SECOND,`change_at`,CURRENT_TIMESTAMP) > 300 AND g.id > 4";
 $stmt = $conn->prepare($query);
 
 if ($stmt->execute()) {
@@ -48,7 +48,7 @@ if ($stmt->execute()) {
 /* ============================= Kick inactive players from tables ============================= */
 $query = "SELECT p.id, p.id_table, p.name, p.cards, g.round, t.host FROM `player` p join `game` g on g.id = p.id_table join `tables_list` t on t.id = p.id_table where timestampdiff(SECOND,g.change_at,CURRENT_TIMESTAMP) > 40";
 $stmt = $conn->prepare($query);
-$boot_friends = 0;
+$boot_friends = array(0, 0, 0, 0, 0);
 
 if ($stmt->execute()) {
     $result = $stmt->get_result();
@@ -56,35 +56,42 @@ if ($stmt->execute()) {
         die();
 
     while ($row = $result->fetch_assoc()) {
-        if ($row['id'] == 1)
+        if ($row['id'] < 5)
             continue;
 
-        if ($row['id_table'] == 1)
-            $boot_friends++;
+        if ($row['id_table'] < 5)
+            $boot_friends[$row['id_table']]++;
 
         $round = json_decode($row['round'], true);
         $cards = json_decode($row['cards'], true);
 
         if (count($round) > 1) { // in game state
-            if ($row['id_table'] == 1 && $row['id'] == $round[0]) {
+            if ($row['id_table'] < 5 && $row['id'] == $round[0]) {
                 kick_player($row['id'], $row['id_table'], $cards, true);
                 cronJobLog("I kick from table " . $row['id_table'] . " player " . $row['name'] . "[" . $row['id'] . "] for inactivity in game");
-                $boot_friends--;
+                $boot_friends[$row['id_table']]--;
             }
         } else { // in wait for player state
             if ($row['id'] != $row['host'] && (!isset($cards['ready']) || $cards['ready'] != true)) {
                 kick_player($row['id'], $row['id_table'], $cards, false);
                 cronJobLog("I kick from table " . $row['id_table'] . " player " . $row['name'] . "[" . $row['id'] . "] for inactivity in lobby");
-                if ($row['id_table'] == 1)
-                    $boot_friends--;
+                if ($row['id_table'] < 5)
+                    $boot_friends[$row['id_table']]--;
             }
         }
     }
 } else cronJobLog("Unable to read tables data, $stmt->errno: $stmt->error");
 
-if($boot_friends == 0)
-{
-    $query = "UPDATE `game` SET chat = '[]' WHERE id = 1";
+$delete_chat_ids = "";
+for ($i = 1; $i < 5; $i++) {
+    if ($boot_friends[$i] == 0) {
+        if($delete_chat_ids == "")
+            $delete_chat_ids .= $i;
+        else $delete_chat_ids .= ",$i";
+    }
+}
+if ($delete_chat_ids != "") {
+    $query = "UPDATE `game` SET chat = '[]' WHERE id IN ($delete_chat_ids)";
     $stmt = $conn->prepare($query);
 
     if (!$stmt->execute())
