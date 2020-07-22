@@ -43,7 +43,7 @@ try {
             $ready = $player->ready();
             $player->update();
 
-            if ($player->getIdTable() == 1 && $macao->allPlayersReady()) {
+            if ($player->getIdTable() < 5 && $macao->allPlayersReady()) {
                 $macao->new_game($player);
                 $macao->update(true, false, true);
             }

@@ -227,7 +227,7 @@ class Macao extends Game
         $this->setRound($round);
         $this->setDetails(array('new_game' => $this->getPlayerCount()));
 
-        if ($this->getRound() == 1) {
+        if ($this->getId() < 5 && $this->getRound() == $this->getId()) {
             $this->nextPlayer($this->boot());
         }
 
@@ -237,7 +237,7 @@ class Macao extends Game
     protected function nextPlayer(bool $macao)
     {
         parent::nextPlayer($macao);
-        if ($this->getPlayerCount() > 1 && $this->getRound() == 1)
+        if ($this->getPlayerCount() > 1 && $this->getId() < 5 && $this->getRound() == $this->getId())
             $this->nextPlayer($this->boot());
     }
 
@@ -253,7 +253,7 @@ class Macao extends Game
         $tableNumber = intdiv($this->getFirstTableCard(), 10);
 
         $boot = new Player();
-        $boot->readOne(1);
+        $boot->readOne($this->getId());
 
         $cards = $boot->getCards();
 
