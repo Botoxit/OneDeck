@@ -141,6 +141,14 @@ class Game
     }
 
     /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
      * @return array
      */
     public function getCards(): array
