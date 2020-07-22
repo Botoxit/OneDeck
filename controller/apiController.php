@@ -24,10 +24,11 @@ class apiController extends Controller
                 die(json_encode(array("status" => $player->getIdTable(), "message" => "You are already in a game")));
             } catch (GameException $e) {
                 session_unset();
+                Debug::Log("Exception from ApiController", __FILE__, 'EXCEPTION');
                 GameException::exitMessage($e->getCode());
             }
         }
-        if ($ver < 1.9)
+        if ($ver < 2.01)
             GameException::exitMessage(22);
         die(json_encode(array("status" => 0)));
     }
