@@ -6,6 +6,7 @@
  */
 
 include_once 'Table.php';
+include_once 'Macao.php';
 
 class Game
 {
@@ -79,14 +80,14 @@ class Game
 
     /**
      * @param bool $update_time
-     * @param bool $macao
+     * @param bool $done_cards
      * @param bool $new_game
      * @throws GameException
      */
-    public function update(bool $update_time, bool $macao = false, bool $new_game = false)
+    public function update(bool $update_time, bool $done_cards = false, bool $new_game = false)
     {
         if (!$new_game) {
-            $this->nextPlayer($macao);
+            $this->nextPlayer($done_cards);
         }
         if (count($this->round) == 1) {
             $lastPlayer = new Player();
@@ -126,10 +127,10 @@ class Game
             throw new GameException("Unable to update game chat for id: $this->id, $stmt->errno: $stmt->error", 3);
     }
 
-    protected function nextPlayer(bool $macao)
+    protected function nextPlayer(bool $done_cards)
     {
         $current_player = array_splice($this->round, 0, 1);
-        if (!$macao) {
+        if (!$done_cards) {
             $this->round = array_merge($this->round, $current_player);
         }
         if (isset($this->details['waiting']) && isset($this->details['waiting'][$this->getRound()])) {
@@ -146,6 +147,11 @@ class Game
     public function getId()
     {
         return $this->id;
+    }
+
+    protected function setId($id)
+    {
+        $this->id = $id;
     }
 
     /**
@@ -195,6 +201,15 @@ class Game
         if ($key !== false) {
             unset($this->round[$key]);
             $this->round = array_values($this->round);
+            if ($this->getPlayerCount() > 1 && $this->getId() < 5 && $this->getRound() == $this->getId()) {
+                $macao = new Macao();
+                $macao->copy_class($this->id, $this->cards, $this->round, $this->deck, $this->details, $this->rules);
+                $macao->nextPlayer($macao->boot());
+                $this->setRound($macao->getRoundArray());
+                $this->setCards($macao->getCards());
+                $this->setDeck($macao->getDeck());
+                $this->setDetails($macao->getDetails());
+            }
         }
     }
 
@@ -204,6 +219,11 @@ class Game
     public function getRules(): array
     {
         return $this->rules;
+    }
+
+    protected function setRules($rules)
+    {
+        $this->rules = $rules;
     }
 
     /**
@@ -251,6 +271,11 @@ class Game
         $this->deck = array_values($deck);
     }
 
+    protected function getDeck()
+    {
+        return $this->deck;
+    }
+
     /**
      * @return int
      */
@@ -259,6 +284,10 @@ class Game
         if (empty($this->round))
             return 0;
         return $this->round[0];
+    }
+    protected function getRoundArray(): array
+    {
+        return $this->round;
     }
 
     protected function setRound(array $round)
