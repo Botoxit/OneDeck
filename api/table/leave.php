@@ -41,7 +41,7 @@ try {
         $table->deleteTable();
     } else {
         $game = new Game();
-        $game->readOne($id_table);
+        $game->readOne($id_table, true);
         $resetTime = $game->getRound() == $player->getId();
         $game->deletePlayer($player);
         $game->update($resetTime,false,true);
