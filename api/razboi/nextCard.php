@@ -11,7 +11,7 @@ include_once CORE . 'Database.php';
 include_once API . 'objects/Razboi.php';
 include_once API . 'objects/Player.php';
 
-if(!isset($_SESSION['id_player']))
+if (!isset($_SESSION['id_player']))
     die(json_encode(array("status" => -21, "message" => "id_player is not set!")));
 
 $conn = Database::getConnection();
@@ -20,19 +20,24 @@ $player = new Player();
 
 try {
     $player->readOne($_SESSION['id_player']);
-    $razboi->readOne($player->getIdTable());
+    $razboi->readOne($player->getIdTable(), true);
 
-    if ($macao->getRound() != $player->getId())
+    if ($razboi->getRound() != $player->getId())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
 
     $cards = $player->getCards();
-    $razboi->nextCard($cards[0]);
+
+    //if($razboi->isWar()) {
+    //} else {
+    $player->removeCards(array($cards[0]));
+    $razboi->nextCard($player, $cards[0]);
+    //}
 
     $player->update();
-    $macao->update(true);
+    $razboi->update(true, count($cards) == 0);
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
-    die(json_encode(array('status' => 1, 'cards' => $cards)));
+    die(json_encode(array('status' => 1, 'cards' => array($cards[0]))));
 } catch (GameException $e) {
     GameException::exitMessage($e->getCode());
 }
