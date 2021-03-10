@@ -17,7 +17,7 @@ class Game
     private $id = 0;
     private $cards = [];
     private $round = [];
-    private $deck = [];
+    protected $deck = [];
     private $details = [];
     private $change_at = 0;
     private $rules = [];
