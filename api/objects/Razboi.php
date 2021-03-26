@@ -53,38 +53,58 @@ class Razboi extends Game
 
     /**
      * @param Player $player
-     * @param int $card
+     * @param array $cards_array
      * @throws GameException
      */
-    public function nextCard(Player $player, int $card)
+    public function nextCard(Player $player, array $cards_array)
     {
         $table_cards = $this->getCards();
 
         $details = $this->getDetails();
-        if(isset($details['round_done']) && $details['round_done'] == true) {
+        if (isset($details['round_done']) && $details['round_done'] == true) {
+            unset($details['inWar']);
             $table_cards = array();
             $details['round_done'] = false;
         }
 
         if (!isset($table_cards[$player->getId()]))
             $table_cards[$player->getId()] = array();
-        array_unshift($table_cards[$player->getId()], $card);
+        foreach ($cards_array as $card)
+            array_unshift($table_cards[$player->getId()], $card);
         $round_done = true;
         $biggest_card = -1;
         $winner_id = -1;
-        if (count($table_cards) == $this->getPlayerCount()) {
+        if (count($table_cards) == $this->getPlayerCount() && (!isset($details['inWar']) || count($details['inWar']) == 0)) {
             foreach ($table_cards as $id_player => $cards) {
                 if (count($cards) == 0) {
                     $round_done = false;
                     break;
                 }
                 if (intdiv($cards[0], 10) == 1) {
+                    if ($biggest_card == 1) {
+                        if (!isset($details['inWar']))
+                            $details['inWar'] = array($winner_id, $id_player);
+                        else array_push($details['inWar'], $id_player);
+                        $round_done = false;
+                    } else {
+                        unset($details['inWar']);
+                        $round_done = true;
+                    }
                     $biggest_card = 1;
                     $winner_id = $id_player;
                 } else {
-                    if ($biggest_card != 1 && intdiv($cards[0], 10) > $biggest_card) {
+                    if ($biggest_card == 1)
+                        continue;
+                    if (intdiv($cards[0], 10) > $biggest_card) {
                         $biggest_card = intdiv($cards[0], 10);
                         $winner_id = $id_player;
+                        unset($details['inWar']);
+                        $round_done = true;
+                    } elseif (intdiv($cards[0], 10) == $biggest_card) {
+                        if (!isset($details['inWar']))
+                            $details['inWar'] = array($winner_id, $id_player);
+                        else array_push($details['inWar'], $id_player);
+                        $round_done = false;
                     }
                 }
             }
@@ -95,11 +115,9 @@ class Razboi extends Game
             foreach ($table_cards as $cards) {
                 $all_cards = array_merge($all_cards, $cards);
             }
-            if($winner_id == $player->getId())
-            {
+            if ($winner_id == $player->getId()) {
                 $player->addCards($all_cards);
-            }
-            else {
+            } else {
                 $winner = new Player();
                 $winner->readOne($winner_id);
                 $winner->addCards($all_cards);
@@ -114,17 +132,30 @@ class Razboi extends Game
     /**
      * @return bool
      */
-    public function isWar()
+    public function isWar(): bool
     {
-        $cards = $this->getCards();
-        $total_cards_down = count($cards);
-        for ($i = 0; $i < $total_cards_down - 1; $i++) {
-            for ($j = $i + 1; $j < $total_cards_down; $j++) {
-                if (intdiv($cards[$i], 10) == intdiv($cards[$j], 10)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        $details = $this->getDetails();
+        if (!isset($details['inWar']))
+            return false;
+        return true;
     }
+
+    public function getPlayerCard($id_player): int
+    {
+        $table_cards = $this->getCards();
+        if (isset($table_cards[$id_player]))
+            return $table_cards[$id_player][0];
+        return 0;
+    }
+
+    protected function nextPlayer(bool $done_cards)
+    {
+        parent::nextPlayer($done_cards);
+        $details = $this->getDetails();
+        if (isset($details['isWar']) && count($details['isWar']) > 0 && !in_array($this->getRound(), $details['isWar'])) {
+            $this->nextPlayer(false);
+        }
+    }
+
+
 }

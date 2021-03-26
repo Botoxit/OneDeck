@@ -25,19 +25,30 @@ try {
     if ($razboi->getRound() != $player->getId())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
 
-    $cards = $player->getCards();
+    $player_cards = $player->getCards();
 
-    //if($razboi->isWar()) {
-    //} else {
-    $player->removeCards(array($cards[0]));
-    $razboi->nextCard($player, $cards[0]);
-    //}
+    if ($razboi->isWar()) {
+        $details = $razboi->getDetails();
+        if (!in_array($player->getId(), $details['inWar']))
+            die(json_encode(array('status' => 0, 'message' => "You are not in this war.")));
+        unset($details['inWar'][array_search($player->getId(), $details['inWar'])]);
+        $razboi->setDetails($details);
+        $count = intdiv($razboi->getPlayerCard($player->getId()), 10);
+        if ($count <= 0)
+            die(json_encode(array('status' => 0, 'message' => "You don't have cards on table.")));
+        $cards = array_splice($player_cards, 0, $count);
+    } else {
+        $cards = array($player_cards[0]);
+    }
+    $player->removeCards($cards);
+    $razboi->nextCard($player, $cards);
+
 
     $player->update();
-    $razboi->update(true, count($cards) == 0);
+    $razboi->update(true, count($player_cards) == 0);
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
-    die(json_encode(array('status' => 1, 'cards' => array($cards[0]))));
+    die(json_encode(array('status' => 1, 'cards' => $cards)));
 } catch (GameException $e) {
     GameException::exitMessage($e->getCode());
 }

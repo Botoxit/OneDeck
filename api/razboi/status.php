@@ -46,6 +46,7 @@ try {
         $result['cards'] = $table_cards[$player->getId()];
 
     $result['chat'] = $razboi->getChat();
+    $result['details'] = $razboi->getDetails();
     if ($razboi->getPlayerCount() < 2)
         $result['details']['new_game'] = -1;
     $result['status'] = 0; // it's not your turn or you are not ready
