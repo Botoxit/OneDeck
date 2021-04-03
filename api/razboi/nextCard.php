@@ -43,7 +43,7 @@ try {
     $player->removeCards($cards);
     $razboi->nextCard($player, $cards);
 
-
+    $cards = $razboi->getCards()[$player->getId()];
     $player->update();
     $razboi->update(true, count($player_cards) == 0);
     if (!$conn->commit())
