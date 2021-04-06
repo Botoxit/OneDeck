@@ -45,7 +45,7 @@ try {
 
     $cards = $razboi->getCards()[$player->getId()];
     $player->update();
-    $razboi->update(true, count($player_cards) == 0);
+    $razboi->update(true);
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
     die(json_encode(array('status' => 1, 'cards' => $cards)));

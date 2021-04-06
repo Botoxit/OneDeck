@@ -41,6 +41,8 @@ class Razboi extends Game
                 $round = array_merge($round, $players_slice);
             }
         }
+        unset($details['rank']);
+        $this->setDetails($details);
 
         $this->setRound($round);
         $this->setCards(array());
@@ -150,8 +152,24 @@ class Razboi extends Game
 
     protected function nextPlayer(bool $done_cards)
     {
-        parent::nextPlayer($done_cards);
+        $current_player = array_splice($this->round, 0, 1);
         $details = $this->getDetails();
+        $player = new Player();
+        $player->readOne($current_player[0]);
+        if (count($player->getCards()) > 0 || !isset($details['round_done']) || $details['round_done'] == false) {
+            $this->round = array_merge($this->round, $current_player);
+        } else {
+            if (!isset($details['rank']))
+                $details['rank'] = array(array('id' => $player->getId(), 'name' => $player->getName()));
+            else array_push($details['rank'], array('id' => $player->getId(), 'name' => $player->getName()));
+            $this->setDetails($details);
+        }
+        if (isset($details['round_done']) && $details['round_done'] == true) {
+            $player->readOne($this->getRound());
+            if ($this->getRound() > 0 && count($player->getCards()) == 0)
+                $this->nextPlayer(false);
+        }
+
         if (isset($details['isWar']) && count($details['isWar']) > 0 && !in_array($this->getRound(), $details['isWar'])) {
             $this->nextPlayer(false);
         }

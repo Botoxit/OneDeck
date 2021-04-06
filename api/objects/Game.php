@@ -16,7 +16,7 @@ class Game
     // object properties
     private $id = 0;
     private $cards = [];
-    private $round = [];
+    protected $round = [];
     protected $deck = [];
     private $details = [];
     private $change_at = 0;
