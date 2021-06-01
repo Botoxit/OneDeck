@@ -53,4 +53,11 @@ class apiController extends Controller
             require_once API . 'razboi' . DIRECTORY_SEPARATOR . $action . '.php';
         } else die(json_encode(array("status" => -1)));
     }
+
+    public function septica(string $action)
+    {
+        if (file_exists(API . 'septica' . DIRECTORY_SEPARATOR . $action . '.php')) {
+            require_once API . 'septica' . DIRECTORY_SEPARATOR . $action . '.php';
+        } else die(json_encode(array("status" => -1)));
+    }
 }
