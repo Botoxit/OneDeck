@@ -430,4 +430,20 @@ class Macao extends Game
         }
         $boot->addCards($cards);
     }
+
+    public function deletePlayer(Player $player)
+    {
+        parent::deletePlayer($player);
+
+        if ($this->getPlayerCount() > 1 && $this->getId() < 5 && $this->getRound() == $this->getId()) {
+            $macao = new Macao();
+            $macao->copy_class($this->getId(), $this->getCards(), $this->round, $this->deck, $this->getDetails(), $this->getRules());
+            $macao->nextPlayer($macao->boot());
+            $this->setRound($macao->getRoundArray());
+            $this->setCards($macao->getCards());
+            $this->setDeck($macao->getDeck());
+            $this->setDetails($macao->getDetails());
+        }
+
+    }
 }
