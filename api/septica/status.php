@@ -98,12 +98,12 @@ try {
     }
 // carti de pe masa, carti jucatori, runda, detalii
 
-    if($septica->getPlayerCount() < 2 && isset($result['rank'])) {
-        foreach ($result['rank'] as $p) {
-            if (isset($result['details']['points'][$p['id']]))
-                $p['cards'] = $result['details']['points'];
+    if ($septica->getPlayerCount() < 2 && isset($result['details']['rank'])) {
+        for ($i = 0; $i < count($result['details']['rank']); $i = $i + 1) {
+            if (isset($result['details']['points'][$result['details']['rank'][$i]['id']]))
+                $result['details']['rank'][$i]['cards'] = $result['details']['points'][$result['details']['rank'][$i]['id']];
         }
-        usort($result['rank'], "cmp");
+        usort($result['details']['rank'], "cmp");
     }
 
     if (isset($result['details']['kick']))
@@ -117,6 +117,10 @@ try {
 
 function cmp(array $a, array $b)
 {
+    if (!isset($b['cards']))
+        return -1;
+    if (!isset($a['cards']))
+        return 1;
     if ($a['cards'] == $b['cards']) {
         return 0;
     }
