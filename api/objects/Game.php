@@ -201,15 +201,6 @@ class Game
         if ($key !== false) {
             unset($this->round[$key]);
             $this->round = array_values($this->round);
-            if ($this->getPlayerCount() > 1 && $this->getId() < 5 && $this->getRound() == $this->getId()) {
-                $macao = new Macao();
-                $macao->copy_class($this->id, $this->cards, $this->round, $this->deck, $this->details, $this->rules);
-                $macao->nextPlayer($macao->boot());
-                $this->setRound($macao->getRoundArray());
-                $this->setCards($macao->getCards());
-                $this->setDeck($macao->getDeck());
-                $this->setDetails($macao->getDetails());
-            }
         }
     }
 
