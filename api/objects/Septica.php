@@ -111,23 +111,20 @@ class Septica extends Game
     protected function nextPlayer(bool $done_cards)
     {
         $current_player = array_splice($this->round, 0, 1);
-        if(!$done_cards || count($this->deck) > count($this->round))
+        if (!$done_cards || count($this->deck) > count($this->round))
             $this->round = array_merge($this->round, $current_player);
         $details = $this->getDetails();
 
         if ($this->getRound() == $details['current_start']) {
-            if ($this->getRound() == $details['next_start']) {
-                $this->end_round();
-            } elseif (isset($details['round_done']) && $details['round_done'] == true) {
+            if (isset($details['round_done']) && $details['round_done'] == true) {
                 $details['round_done'] = false;
                 $this->setCards(array());
                 $details['current_start'] = $details['next_start'];
-                $key = array_search($details['next_start'], $this->round);
-                if ($key > 0) {
-                    $players_slice = array_splice($this->round, 0, $key);
-                    $this->round = array_merge($this->round, $players_slice);
-                }
+
+                $this->setStartPlayer($details['next_start']);
                 $this->setDetails($details);
+            } elseif ($this->getRound() == $details['next_start']) {
+                $this->end_round();
             }
         }
     }
@@ -146,14 +143,38 @@ class Septica extends Game
         if (!isset($details['points'][$this->getRound()]))
             $details['points'][$this->getRound()] = $points;
         else $details['points'][$this->getRound()] += $points;
+        if ($this->getDeckCount() == 0) {
+            $this->setStartPlayer($details['next_start']);
+            $details['round_done'] = false;
+            $this->setCards(array());
+            $details['current_start'] = $details['next_start'];
+        }
         $this->setDetails($details);
+    }
+
+    private function setStartPlayer($id)
+    {
+        if ($this->getRound() != $id) {
+            $key = array_search($id, $this->round);
+            if ($key > 0) {
+                $players_slice = array_splice($this->round, 0, $key);
+                $this->round = array_merge($this->round, $players_slice);
+            }
+        }
     }
 
     public function takeCards(int $count, bool $firstCard = false): array
     {
         if ($count == 1)
             return array_splice($this->deck, 0, $count);
-        $per_user = intdiv(count($this->deck), count($this->round));
+
+        $details = $this->getDetails();
+        $i = 0;
+        if($this->round[1] == $details['current_start'])
+            $i = $this->getPlayerCount() - 1;
+        elseif($this->getPlayerCount() > 2 && $this->round[2] == $details['current_start'])
+            $i = $this->getPlayerCount() - 2;
+        $per_user = ceil(count($this->deck) / (count($this->round) - $i));
         if ($count <= $per_user)
             return array_splice($this->deck, 0, $count);
         else

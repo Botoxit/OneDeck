@@ -54,6 +54,8 @@ try {
     $septica->update(true);
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
+    if(count($cards) == 0)
+        die(json_encode(array('status' => 0, 'cards' => $cards)));
     die(json_encode(array('status' => 1, 'cards' => $cards)));
 } catch (GameException $e) {
     GameException::exitMessage($e->getCode());
