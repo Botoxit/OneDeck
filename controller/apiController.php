@@ -33,6 +33,13 @@ class apiController extends Controller
         die(json_encode(array("status" => 0)));
     }
 
+    /**
+     * @param string $action - API script from Table set
+     * @param int $id_player - (optional) player id
+     *
+     * Run $action script from /api/table/
+     * if it isn't exist, respond with JSON: {"status":-1}
+     */
     public function table(string $action, int $id_player = 0)
     {
         if (file_exists(API . 'table' . DIRECTORY_SEPARATOR . $action . '.php')) {
@@ -41,6 +48,12 @@ class apiController extends Controller
     }
 
     public function macao(string $action, int $id_player = 0)
+    /**
+     * @param string $action - API script from Macao set
+     *
+     * Run $action script from /api/macao/
+     * if it isn't exist, respond with JSON: {"status":-1}
+     */
     {
         if (file_exists(API . 'macao' . DIRECTORY_SEPARATOR . $action . '.php')) {
             require_once API . 'macao' . DIRECTORY_SEPARATOR . $action . '.php';
@@ -48,12 +61,24 @@ class apiController extends Controller
     }
 
     public function razboi(string $action)
+    /**
+     * @param string $action - API script from War set
+     *
+     * Run $action script from /api/war/
+     * if it isn't exist, respond with JSON: {"status":-1}
+     */
     {
         if (file_exists(API . 'razboi' . DIRECTORY_SEPARATOR . $action . '.php')) {
             require_once API . 'razboi' . DIRECTORY_SEPARATOR . $action . '.php';
         } else die(json_encode(array("status" => -1)));
     }
 
+    /**
+     * @param string $action - API script from Septica set
+     *
+     * Run $action script from /api/septica/
+     * if it isn't exist, respond with JSON: {"status":-1}
+     */
     public function septica(string $action)
     {
         if (file_exists(API . 'septica' . DIRECTORY_SEPARATOR . $action . '.php')) {

@@ -28,6 +28,7 @@ try {
     $player->readOne($_SESSION['id_player']);
     $septica->readOne($player->getIdTable(), $player->getIdTable() < 5);
 
+    // it's this player's turn?
     if ($septica->getRound() != $player->getId())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
 
@@ -37,6 +38,7 @@ try {
         $details['new_game'] = $details['new_game'] - 1;
     $septica->setDetails($details);
 
+    // is it a turn to draw cards?
     if (!isset($details['round_done']) || $details['round_done'] == false)
         if($player->getId() != $details['current_start'] || $player->getId() == $details['next_start'])
             die(json_encode(array('status' => 0, 'message' => "You need to place a card on table!")));

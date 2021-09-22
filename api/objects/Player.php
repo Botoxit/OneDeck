@@ -20,6 +20,7 @@ class Player
     /**
      * Player constructor.
      * @param string $newName (default 'Player')
+     * Get in local attribute the db connection
      */
     public function __construct(string $newName = "Player")
     {
@@ -28,8 +29,8 @@ class Player
     }
 
     /**
-     * Get database table name for Players
      * @return string
+     * Get database table name for Players
      */
     public static function getTableName(): string
     {
@@ -37,8 +38,10 @@ class Player
     }
 
     /**
-     * @param $id
+     * @param $id - player id
      * @throws GameException
+     *
+     * Read from db data about player with id = $id
      */
     public function readOne($id)
     {
@@ -62,9 +65,11 @@ class Player
 
 
     /**
-     * @param $id_table
-     * @return false|mysqli_result
+     * @param $id_table - table id
+     * @return false|mysqli_result - MySQL rezult with all players or false
      * @throws GameException
+     *
+     * Read all players from a table
      */
     public function readAll($id_table)
     {
@@ -78,10 +83,12 @@ class Player
     }
 
     /**
-     * @return int
+     * @return int - player id
      * @throws GameException
+     *
+     * Create a new player
      */
-    public function create()
+    public function create(): int
     {
         $query = "INSERT INTO " . Player::$DBTable_name . " (id, id_table, name) VALUES (NULL, ?, ?)";
         $stmt = $this->conn->prepare($query);
@@ -96,6 +103,8 @@ class Player
 
     /**
      * @throws GameException
+     *
+     * Update player data in db
      */
     public function update()
     {
@@ -112,24 +121,25 @@ class Player
 
     /**
      * @throws GameException
+     *
+     * Delete player
      */
     public function delete()
     {
         $query = "DELETE FROM " . Player::$DBTable_name . " WHERE id = ?";
-        // prepare query statement
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param('i', $this->id);
-        // execute query
         if (is_bool($stmt) || !$stmt->execute())
             throw new GameException("Unable to delete player with id: $this->id, $stmt->errno: $stmt->error", 14);
     }
 
     /**
-     * Check if Player really have $cards in his hand
      * @param array $cards
      * @return bool
+     *
+     * Check if Player really have $cards in his hand
      */
-    public function checkCards(array $cards)
+    public function checkCards(array $cards): bool
     {
         foreach ($cards as $card) {
             if (!in_array($card, $this->cards))
@@ -139,10 +149,11 @@ class Player
     }
 
     /**
-     * Set if a Player is ready or not.
      * @return bool
+     *
+     * Set if a Player is ready or not.
      */
-    public function ready()
+    public function ready(): bool
     {
         if (!isset($this->cards['ready'])) {
             $this->cards['ready'] = true;
@@ -153,10 +164,10 @@ class Player
     }
 
     /**
-     * Id getter
      * @return int
+     * Id getter
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -170,17 +181,17 @@ class Player
     }
 
     /**
-     * Id for table getter
      * @return int|null
+     * Id for table getter
      */
-    public function getIdTable()
+    public function getIdTable(): ?int
     {
         return $this->id_table;
     }
 
     /**
-     * Id for table setter
      * @param int $idTable
+     * Id for table setter
      */
     public function setIdTable(int $idTable): void
     {
@@ -188,26 +199,26 @@ class Player
     }
 
     /**
-     * Player name getter
      * @return string
+     * Player name getter
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
+     * @return array
      * Player cards getter
-     * @return mixed
      */
-    public function getCards()
+    public function getCards(): array
     {
         return $this->cards;
     }
 
     /**
-     * Add cards in Player hand (when player get cards)
      * @param array $cards
+     * Add cards in Player hand (when player get cards)
      */
     public function addCards(array $cards)
     {
@@ -215,8 +226,8 @@ class Player
     }
 
     /**
-     * Player cards setter
      * @param array $cards
+     * Player cards setter
      */
     public function setCards(array $cards)
     {
@@ -224,11 +235,11 @@ class Player
     }
 
     /**
-     * Remove cards from Player hand (when player use cards)
      * @param array $cards
-     * @return int
+     * @return int - number of cards left in hand
+     * Remove cards from Player hand (when player use cards)
      */
-    public function removeCards(array $cards)
+    public function removeCards(array $cards): int
     {
         $player_cards = array_diff($this->cards, $cards);
         $this->cards = array_values($player_cards);

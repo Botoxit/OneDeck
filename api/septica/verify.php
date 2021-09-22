@@ -27,6 +27,7 @@ $player = new Player();
 $post = json_decode(file_get_contents("php://input"));
 
 try {
+    // input validation
     if (empty($post->cards))
         throw new GameException("Bad request, post data is missing", 8);
     if (count($post->cards) > 1)
@@ -35,9 +36,11 @@ try {
     $player->readOne($_SESSION['id_player']);
     $septica->readOne($player->getIdTable(), true);
 
+    // it's this player's turn?
     if ($player->getId() != $septica->getRound())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
 
+    // is it a turn in which cards are placed on the table?
     $details = $septica->getDetails();
     if(isset($details['round_done']) && $details['round_done'] == true)
         die(json_encode(array('status' => 0, 'message' => "Round done. Take cards!")));
@@ -50,6 +53,7 @@ try {
     if (!$septica->verify($player->getId(), $post->cards[0]))
         die(json_encode(array('status' => 0, 'message' => "This cards is not right.")));
 
+    // remove cards from the player's hand and check the winning condition
     $cards_count = $player->removeCards($post->cards);
     if($cards_count == 0 && $septica->getDeckCount() < $septica->getPlayerCount())
     {

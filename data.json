@@ -1,0 +1,44 @@
+[
+  {
+    "id": 12,
+    "name": "example_table",
+    "password": "",
+    "game": "Macao",
+    "players_limit": 6,
+    "host": 1,
+    "rules": {
+      "changeSymbol": 1,
+      "waitCard": 4,
+      "stopCard": 7,
+      "changeSymbol_color": false,
+      "takeCards_color": false,
+      "waitCard_color": true,
+      "stopCard_color": false,
+      "stop_wait": true,
+      "deck": true
+    },
+    "players": [
+      {
+        "id": 1,
+        "name": "player1",
+        "cards": [114, 23, 31, 82],
+        "details": { "ready": true }
+      },
+      {
+        "id": 2,
+        "name": "player1",
+        "cards": [62, 81],
+        "details": { "ready": true }
+      }
+    ],
+    "gameState": {
+      "change_at": 1623592711,
+      "cards": [43, 41, 42, 131, 54],
+      "round": [2, 1],
+      "deck": [51, 73, 93, ...],
+      "details": {
+        "waiting": {"1": 3}
+      }
+    }
+  }
+]

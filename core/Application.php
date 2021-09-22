@@ -1,6 +1,8 @@
 <?php
 
 include_once CORE . 'Database.php';
+include_once CORE . 'View.php';
+include_once CORE . 'Controller.php';
 
 class Application
 {
@@ -8,6 +10,13 @@ class Application
     private $action = 'index';
     private $params = [];
 
+    /**
+     * Application constructor.
+     *
+     * Populate local attributes by calling function prepareURL()
+     * Make a new instance of controller and call the action,
+     * if controller or action is missing, 404 page is displayed
+     */
     public function __construct()
     {
         $this->prepareURL();
@@ -23,19 +32,30 @@ class Application
         }
     }
 
+    /**
+     * Extract from url: controller, action and parameters
+     * {domain}/{controller}/{action}/{parameter_1}/..../{parameter_n}
+     *
+     * Default values for controller is 'homeController'
+     * and for action is 'index' (website home page)
+     */
     protected function prepareURL()
     {
         $request = trim($_SERVER['REQUEST_URI'], '/');
         if (!empty($request)) {
             $url = explode('/', $request);
-//            unset($url[0]);
             $this->controller = isset($url[0]) ? $url[0] . 'Controller' : 'homeController';
             $this->action = isset($url[1]) ? $url[1] : 'index';
-            unset($url[0], $url[1]);
+            unset($url[0], $url[1]); // delete from array controller and action
+            // Now, array $url is list of parameters
             $this->params = !empty($url) ? array_values($url) : [];
         }
     }
 
+    /**
+     * @param string $path - url
+     * Redirect user to $path address
+     */
     public static function redirectTo($path = "")
     {
         if (empty($path)) {

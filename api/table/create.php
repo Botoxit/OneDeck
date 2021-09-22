@@ -25,7 +25,7 @@ try {
     if (empty($post->playerName) || empty($post->tableName) || empty($post->game) ||
         empty($post->playersLimit) || empty($post->rules))
         throw new GameException("Bad request, post data is missing", 8);
-
+    // Create player
     $player = new Player($post->playerName);
     $id_player = $player->create();
 
@@ -34,7 +34,7 @@ try {
         $password = $post->password;
     $table = new Table();
     $table->setter($post->tableName, $password, $post->game, $post->playersLimit, (array)$post->rules, $player->getId());
-
+    // Create table
     $idTable = $table->create();
 
     if ($idTable == 0) {

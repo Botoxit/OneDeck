@@ -23,11 +23,13 @@ try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable(), $player->getIdTable() < 5);
 
+    // it's this player's turn?
     if ($macao->getRound() != $player->getId())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
 
     $details = $macao->getDetails();
     unset($details['kick']);
+    // player doesn't have to wait
     if (empty($details['toWait']))
         die(json_encode(array('status' => 0, 'message' => "You don't need to wait.")));
 

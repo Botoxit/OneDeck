@@ -2,6 +2,14 @@
 
 class GameException extends Exception
 {
+    /**
+     * GameException constructor.
+     * @param string $message
+     * @param int $code
+     * @param Throwable|null $previous
+     *
+     * Log exception and call parent constructor
+     */
     public function __construct($message = "", $code = 0, Throwable $previous = null)
     {
         Debug::Log($code . ': ' . $message, parent::getFile(), 'EXCEPTION');
@@ -35,6 +43,10 @@ class GameException extends Exception
         "Unable to kick this player",               // 23
     );
 
+    /**
+     * @param int $code - error code
+     * Stop running the application immediately and respond with error code and message
+     */
     public static function exitMessage(int $code)
     {
         if ($code < count(self::$messages))

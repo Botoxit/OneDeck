@@ -30,6 +30,7 @@ $macao = new Macao();
 try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable());
+    // if the player is the host, a new game is initialized
     if ($macao->getHost() == $player->getId()) {
         if ($macao->allPlayersReady()) {
             $macao->new_game($player);
@@ -39,6 +40,7 @@ try {
             die(json_encode(array('status' => 2)));
         } else die(json_encode(array('status' => -1)));
     } else {
+        // otherwise, player change ready status
         if ($macao->getPlayerCount() < 2) {
             $ready = $player->ready();
             $player->update();

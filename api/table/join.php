@@ -34,7 +34,7 @@ try {
 
     if(!$table->checkPassword($post->password))
         die(json_encode(array("status" => 0, "message" => "Wrong password!")));
-
+    // Create player
     $player = new Player($post->playerName);
     $player->setIdTable($post->id);
     $id_player = $player->create();

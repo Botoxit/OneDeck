@@ -28,14 +28,17 @@ try {
     $player->readOne($_SESSION['id_player']);
     $macao->readOne($player->getIdTable(), $player->getIdTable() < 5);
 
+    // it's this player's turn?
     if ($macao->getRound() != $player->getId())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
 
+    // he is forced to wait?
     $details = $macao->getDetails();
     unset($details['kick']);
     if (!empty($details['toWait']))
         die(json_encode(array('status' => 0, 'message' => "You can't take card in this situation.")));
 
+    // is the first round of drawing cards?
     if (!empty($details['new_game']) && $details['new_game'] > 0) {
         $cards = $macao->takeCards(5);
         $details['new_game'] = $details['new_game'] - 1;
@@ -43,6 +46,7 @@ try {
     } elseif (empty($details['takeCards']))
         $cards = $macao->takeCards(1);
     else {
+        // is he obliged to take a number of books?
         $cards = $macao->takeCards($details['takeCards']);
         unset($details['takeCards']);
         $macao->setDetails($details);

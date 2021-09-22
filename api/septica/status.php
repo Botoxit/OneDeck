@@ -35,8 +35,8 @@ try {
     if ($players_list->num_rows == 0)
         throw new GameException("Players list for table with id " . $player->getIdTable() . " don't exist in database.", 19);
 
+    // prepare game data
     $result = array();
-//    $result['table'] = $razboi->getCards();
     $result['cards'] = array();
     $result['cards'] = $septica->getCards();
     $result['deck'] = $septica->getDeckCount();
@@ -51,9 +51,11 @@ try {
     $i = 0;
     $me = 0;
 
+    // Read data about players
     while ($row = $players_list->fetch_assoc()) {
         $i = $i + 1;
         $player_cards = json_decode($row['cards'], true);
+        // opponents data
         if ($row['id'] != $_SESSION['id_player']) {
             $table_item = array(
                 "id" => $row['id'],
@@ -66,12 +68,14 @@ try {
                 $table_item['pause'] = $table_item['details']['pause'];
             else $table_item['pause'] = false;
 
+            // the game hasn't started yet
             if ($septica->getPlayerCount() < 2) {
                 if ($septica->getHost() == $row['id'])
                     $table_item['status'] = 2;
                 elseif (isset($player_cards['ready']) && $player_cards['ready'] == true)
                     $table_item['status'] = 1;
             } else {
+                // the status of opponents
                 if ($row['id'] == $septica->getRound())
                     $table_item['status'] = 1;
                 $table_item['cards'] = count($player_cards);
@@ -79,25 +83,27 @@ try {
             array_push($result['players'], $table_item);
         } else {
             $me = $i - 1;
+            // the game hasn't started yet
             if ($septica->getPlayerCount() < 2) {
                 if ($septica->getHost() == $_SESSION['id_player']) {
                     $result['status'] = 2;
                 } elseif (isset($player_cards['ready']) && $player_cards['ready'] == true)
                     $result['status'] = 1;
             } else {
+                // it's this player's round
                 if ($_SESSION['id_player'] == $septica->getRound())
                     $result['status'] = 1;
             }
         }
     }
 
-// 1 2 [me]3 4     1 2  4    =  2       4 1 2
+    // we order the players
     if ($me > 0 && $me < $i - 1) {
         $players_slice = array_splice($result['players'], 0, $me);
         $result['players'] = array_merge($result['players'], $players_slice);
     }
-// carti de pe masa, carti jucatori, runda, detalii
 
+    // ordering and updating rankings
     if ($septica->getPlayerCount() < 2 && isset($result['details']['rank'])) {
         for ($i = 0; $i < count($result['details']['rank']); $i = $i + 1) {
             if (isset($result['details']['points'][$result['details']['rank'][$i]['id']]))
@@ -106,6 +112,7 @@ try {
         usort($result['details']['rank'], "cmp");
     }
 
+    // the number of votes required to eliminate the current player
     if (isset($result['details']['kick']))
         $result['details']['kick'] = count($result['details']['kick']) * 10 + $septica->getPlayerCount() - 1;
     else $result['details']['kick'] = $septica->getPlayerCount() - 1;

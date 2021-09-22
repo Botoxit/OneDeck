@@ -8,8 +8,11 @@ class View
 
     /**
      * View constructor.
-     * @param $view_file
-     * @param $view_data
+     * @param $view_file - phtml filename
+     * @param $view_data - list of parameters
+     *
+     * Save filename and list of parameters in local attributes
+     * and set title of page according to the filename
      */
     public function __construct($view_file, $view_data)
     {
@@ -18,6 +21,10 @@ class View
         $this->title = ucfirst(dirname($view_file));
     }
 
+    /**
+     * We include the phtml file if it exist
+     * otherwise we include 404 webpage
+     */
     public function render()
     {
         if (file_exists(VIEW . $this->file . '.phtml')) {

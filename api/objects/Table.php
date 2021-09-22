@@ -22,6 +22,7 @@ class Table
 
     /**
      * Table constructor.
+     * Get in local attribute the db connection
      */
     public function __construct()
     {
@@ -39,12 +40,14 @@ class Table
 
     /**
      * Table parameter setter
-     * @param string $newName
-     * @param string|null $newPassword
-     * @param string $newGame
-     * @param int $newPlayerLimit
-     * @param array $newRules
-     * @param int $newHost
+     * @param string $newName - table name
+     * @param string|null $newPassword - password
+     * @param string $newGame - the game played at the table
+     * @param int $newPlayerLimit - maximum limit of players
+     * @param array $newRules - rules list
+     * @param int $newHost - host player id
+     *
+     * playerLimit = <players already at the table> * 10 + <maximum limit of players>
      */
     public function setter(string $newName, $newPassword, string $newGame, int $newPlayerLimit, array $newRules, int $newHost)
     {
@@ -59,8 +62,10 @@ class Table
     }
 
     /**
-     * @param $id
+     * @param $id - table id
      * @throws GameException
+     *
+     * Read from db table data
      */
     public function readOne($id)
     {
@@ -85,10 +90,15 @@ class Table
     }
 
     /**
-     * @param int $fromTableId
-     * @param int $count
-     * @return false|mysqli_result
+     * @param $name - table name
+     * @param $password - locked tables?
+     * @param $game - the game played at the table
+     * @param $players_limit - maximum limit of players
+     * @param $rules - rules list
+     * @return bool|mysqli_result - list of tables or false in case of error
      * @throws GameException
+     *
+     * Search tables which matches the input criteria
      */
     public function readPaging(int $fromTableId, int $count)
     {
@@ -141,8 +151,10 @@ class Table
 
 
     /**
-     * @return int
+     * @return int - table id
      * @throws GameException
+     *
+     * Create a new table
      */
     public function create()
     {
@@ -162,6 +174,8 @@ class Table
 
     /**
      * @throws GameException
+     *
+     * Update in db the new state of table
      */
     public function update()
     {
@@ -175,6 +189,8 @@ class Table
 
     /**
      * @throws GameException
+     *
+     * Delete table
      */
     public function deleteTable()
     {
@@ -188,7 +204,7 @@ class Table
     }
 
     /**
-     * @return int
+     * @return int - maximum limit of players
      */
     public function getPlayersLimit(): int
     {
@@ -196,13 +212,19 @@ class Table
     }
 
     /**
-     * @param mixed $players_limit
+     * @param mixed $players_limit - maximum limit of players
      */
     public function setPlayersLimit($players_limit): void
     {
         $this->players_limit = $players_limit;
     }
 
+    /**
+     * @param string $password
+     * @return bool
+     *
+     * Check if input password matches the table password
+     */
     public function checkPassword(string $password) : bool
     {
         if(empty($this->password))
@@ -214,6 +236,7 @@ class Table
 
     /**
      * @throws GameException
+     * Search for a new host player
      */
     public function newHost()
     {
@@ -228,9 +251,9 @@ class Table
     }
 
     /**
-     * @return mixed
+     * @return array - rules list
      */
-    public function getRules()
+    public function getRules(): array
     {
         return $this->rules;
     }

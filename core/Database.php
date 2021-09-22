@@ -21,25 +21,31 @@ class Database
     private const PASSWORD = "l%f1YZ*oj;z;";
     private const DATABASE = "dinopyco_onedeck";
     private const PORT = 3306;
-    private static $conn;
+    private static $connection;
 
     /**
-     * @return mysqli
+     * @return mysqli - MySQL connection
+     *
+     * if already exist a connection with db, return $connection
+     * else a new connection is established
+     *
+     * We set autocommit on false because we want to save changes in db
+     * only if all the steps have been completed
      */
-    public static function getConnection()
+    public static function getConnection(): mysqli
     {
-        if (self::$conn != null && get_class(self::$conn) == mysqli::class)
-            return self::$conn;
+        if (self::$connection != null && get_class(self::$connection) == mysqli::class)
+            return self::$connection;
         try {
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-            self::$conn = new mysqli(self::HOST, self::USER, self::PASSWORD, self::DATABASE, self::PORT);
-            self::$conn->autocommit(false);
-            self::$conn->set_charset("utf8");
+            self::$connection = new mysqli(self::HOST, self::USER, self::PASSWORD, self::DATABASE, self::PORT);
+            self::$connection->autocommit(false);
+            self::$connection->set_charset("utf8");
             mysqli_report(MYSQLI_REPORT_OFF);
         } catch (mysqli_sql_exception $sql_exception) {
             Debug::Log($sql_exception->getCode() . ':' . $sql_exception->getMessage(), basename(__FILE__), "ERROR");
             die(json_encode(array('status' => 0, 'message' => 'Something is wrong')));
         }
-        return self::$conn;
+        return self::$connection;
     }
 }

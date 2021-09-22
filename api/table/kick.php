@@ -28,7 +28,7 @@ $game = new Game();
 try {
     $player->readOne($_SESSION['id_player']);
     $game->readOne($player->getIdTable());
-
+    // the host can eliminate a player based on the id
     if ($id_player > 0) {
         if ($game->getHost() != $player->getId())
             throw new GameException("Player [" . $player->getId() . "]" . $player->getName() . " try to kick player but is not the host " . $player->getIdTable(), 23);
@@ -38,6 +38,7 @@ try {
         if ($kick_player->getIdTable() != $player->getIdTable())
             throw new GameException("Player [" . $player->getId() . "]" . $player->getName() . " try to kick player from other table " . $player->getIdTable() . " != " . $kick_player->getIdTable(), 23);
     } else {
+        // players can vote to eliminate the current player
         if($game->getPlayerCount() < 2)
             die(json_encode(array("status" => 0, "message" => "You can't vote kick now.")));
 
@@ -56,19 +57,23 @@ try {
         $game->setDetails($details);
     }
 
+    // if a player must be eliminated
     if(isset($kick_player)) {
         $table = new Table();
         $table->readOne($player->getIdTable());
 
+        // the table details are updated
         $table->setPlayersLimit($table->getPlayersLimit() - 10);
         if ($game->getHost() == $kick_player->getId())
             $table->newHost();
         $table->update();
 
+        // the player is eliminated from the current game
         if($game->getPlayerCount() > 1)
             $game->deletePlayer($kick_player);
 
         try {
+            // Delete player
             $kick_player->delete();
         } catch (GameException $ex) {
         }

@@ -30,23 +30,20 @@ $septica = new Septica();
 try {
     $player->readOne($_SESSION['id_player']);
     $septica->readOne($player->getIdTable());
+    // if the player is the host, a new game is initialized
     if ($septica->getHost() == $player->getId()) {
         if ($septica->allPlayersReady()) {
-            $septica->new_game($player);
+            $septica->newGame($player);
             $septica->update(true, false, true);
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
             die(json_encode(array('status' => 2)));
         } else die(json_encode(array('status' => -1)));
     } else {
+        // otherwise, player change ready status
         if ($septica->getPlayerCount() < 2) {
             $ready = $player->ready();
             $player->update();
-
-//            if ($player->getIdTable() < 5 && $septica->allPlayersReady()) {
-//                $septica->new_game($player);
-//                $septica->update(true, false, true);
-//            }
 
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);

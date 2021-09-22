@@ -8,16 +8,18 @@ class Septica extends Game
     /**
      * @param Player $player
      * @throws GameException
+     *
+     * Initializing a new game
      */
-    public function new_game(Player $player)
+    public function newGame(Player $player)
     {
+        // player list initialization and distribute the cards to them
         $round = [];
         $players_list = $player->readAll($player->getIdTable());
         if ($players_list->num_rows == 0)
             die(json_encode(array("status" => -1, "message" => "Unable to read players.")));
         while ($row = $players_list->fetch_assoc()) {
             $player->readOne($row['id']);
-//            $player->setCards($this->takeCards(4));
             $player->setCards(array());
             $player->update();
 
@@ -26,6 +28,7 @@ class Septica extends Game
 
         $details = $this->getDetails();
 
+        // Generate deck
         $deck = array(11, 12, 13, 14, 71, 72, 73, 74, 81, 82);
         if (count($round) < 3) {
             array_push($deck, 83, 84);
@@ -39,6 +42,7 @@ class Septica extends Game
         shuffle($deck);
         $this->setDeck($deck);
 
+        // the winner of the last game will start the new one
         $round = array_values($round);
         if (!empty($details['rank'])) {
             $key = array_search($details['rank'][0]['id'], $round);
@@ -58,6 +62,7 @@ class Septica extends Game
             }
         }
 
+        // initialization game details
         unset($details['rank']);
         unset($details['kick']);
         $details['round_done'] = true;
@@ -70,20 +75,32 @@ class Septica extends Game
         $this->setCards(array());
     }
 
+    /**
+     * @param int $player_id - player id
+     * @param int $card - the list of playing cards to be checked
+     * @return bool
+     *
+     * Check if the cards and the current state of the game
+     * follow the rules
+     */
     public function verify(int $player_id, int $card): bool
     {
         $table_cards = $this->getCards();
         $details = $this->getDetails();
 
+        // at the beginning of a game
+        // player who started current round = player who will start next round
         if (count($table_cards) == 0) {
             $details['current_start'] = $player_id;
             $details['next_start'] = $player_id;
         } else {
+            // check that the playing cards follow the rules of the game
             $first_card = $table_cards[count($table_cards) - 1];
             $switch_start_player = intdiv($card, 10) == intdiv($first_card, 10);
             $switch_start_player = $switch_start_player || intdiv($card, 10) == 7;
             if ($details['opt_taie'] == true)
                 $switch_start_player = $switch_start_player || intdiv($card, 10) == 8;
+            // if the current player has cut, he will start the next round
             if ($switch_start_player) {
                 $details['next_start'] = $player_id;
             } elseif ($player_id == $details['current_start'])
@@ -96,8 +113,11 @@ class Septica extends Game
 
     /**
      * @param Player $player
-     * @param array $cards
+     * @param array $cards - the list of playing cards to be checked
      * @return bool
+     *
+     * Check if playing cards have the same number
+     * and if the player has these cards in his hand
      */
     public function checkCards(Player $player, array $cards): bool
     {
@@ -108,14 +128,22 @@ class Septica extends Game
         return $player->checkCards($cards);
     }
 
-    protected function nextPlayer(bool $done_cards)
+    /**
+     * @param bool $win_condition
+     *
+     * Change the current round
+     * and it is decided whether a round has ended or not
+     */
+    protected function nextPlayer(bool $win_condition)
     {
         $current_player = array_splice($this->round, 0, 1);
-        if (!$done_cards || count($this->deck) > count($this->round))
+        if (!$win_condition || count($this->deck) > count($this->round))
             $this->round = array_merge($this->round, $current_player);
         $details = $this->getDetails();
 
+        // all players put a card on the table or drew one
         if ($this->getRound() == $details['current_start']) {
+            // if the round is over and the players have taken cards, we start a new round
             if (isset($details['round_done']) && $details['round_done'] == true) {
                 $details['round_done'] = false;
                 $this->setCards(array());
@@ -123,12 +151,16 @@ class Septica extends Game
 
                 $this->setStartPlayer($details['next_start']);
                 $this->setDetails($details);
+            // otherwise we end this round
             } elseif ($this->getRound() == $details['next_start']) {
                 $this->end_round();
             }
         }
     }
 
+    /**
+     * We end this round and count the points won
+     */
     public function end_round()
     {
         $details = $this->getDetails();
@@ -143,6 +175,8 @@ class Septica extends Game
         if (!isset($details['points'][$this->getRound()]))
             $details['points'][$this->getRound()] = $points;
         else $details['points'][$this->getRound()] += $points;
+        // if there are no more cards in the pack,
+        // we will skip the round in which the cards are drawn
         if ($this->getDeckCount() == 0) {
             $this->setStartPlayer($details['next_start']);
             $details['round_done'] = false;
@@ -152,6 +186,10 @@ class Septica extends Game
         $this->setDetails($details);
     }
 
+    /**
+     * @param $id - player id
+     * We set the player with id = $id as current player
+     */
     private function setStartPlayer($id)
     {
         if ($this->getRound() != $id) {
@@ -163,7 +201,14 @@ class Septica extends Game
         }
     }
 
-    public function takeCards(int $count, bool $firstCard = false): array
+    /**
+     * @param int $count - the amount of playing cards
+     * @return array - list of drawn cards
+     *
+     * if there are not enough cards left in the deck,
+     * we will distribute them equally
+     */
+    public function takeCards(int $count): array
     {
         if ($count == 1)
             return array_splice($this->deck, 0, $count);

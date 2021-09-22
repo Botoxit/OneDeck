@@ -37,19 +37,23 @@ try {
     $table = new Table();
     $table->readOne($id_table);
     $playerLimit = $table->getPlayersLimit() - 10;
+    // if he is the last player at the table, delete table
     if ($playerLimit < 10) {
         $table->deleteTable();
     } else {
+        // the player is eliminated from the current game
         $game = new Game();
         $game->readOne($id_table, true);
         $resetTime = $game->getRound() == $player->getId();
         $game->deletePlayer($player);
         $game->update($resetTime,false,true);
 
+        // the table details are updated
         $table->setPlayersLimit($playerLimit);
         if ($game->getHost() == $player->getId())
             $table->newHost();
         $table->update();
+        // Delete player
         $player->delete();
     }
 
