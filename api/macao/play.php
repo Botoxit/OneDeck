@@ -33,7 +33,7 @@ try {
     // if the player is the host, a new game is initialized
     if ($macao->getHost() == $player->getId()) {
         if ($macao->allPlayersReady()) {
-            $macao->new_game($player);
+            $macao->newGame($player);
             $macao->update(true, false, true);
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
