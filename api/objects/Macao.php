@@ -9,7 +9,15 @@ include_once 'Player.php';
 
 class Macao extends Game
 {
-    public function copy_class($id, $cards, $round, $deck, $details, $rules)
+    /**
+     * @param $id - table id
+     * @param $cards - the list of playing cards on the table
+     * @param $round - the list of players from the current game
+     * @param $deck - the remaining deck of playing cards
+     * @param $details - list of details parameters
+     * @param $rules - rules list
+     */
+    public function setter($id, $cards, $round, $deck, $details, $rules)
     {
         $this->setId($id);
         $this->setCards($cards);
@@ -20,18 +28,27 @@ class Macao extends Game
     }
 
     // {"takeCards_color":0,"waitCard":4,"waitCard_color":1,"changeSymbol":1,"changeSymbol_color":0,"stopCard":7,"stopCard_color":0,"deck":1,"stop_wait":1}
-    public function verify(array $cards, $symbol)
+    /**
+     * @param array $cards - the list of playing cards to be checked
+     * @param $symbol - in which symbol player want to change
+     * @return bool
+     *
+     * Check if the cards and the current state of the game
+     * follow the rules
+     */
+    public function verify(array $cards, $symbol): bool
     {
         $tableCard = $this->getFirstTableCard();
         $details = $this->getDetails();
         $rules = $this->getRules();
 
+        // what symbol player need to use
         if (!empty($details['changeSymbol'])) {
             $tableSymbol = $details['changeSymbol'];
             unset($details['changeSymbol']);
         } else $tableSymbol = $tableCard % 10;
 
-        // If I need to take cards
+        // If player needs to take cards
         if (!empty($details['takeCards'])) {
 //            if ((intdiv($cards[0], 10) == intdiv($tableCard, 10)) || ($tableCard > 4 && $cards[0] > 4)) {
 //                if ($cards[0] == 5 || $cards[0] == 6) {
@@ -43,9 +60,12 @@ class Macao extends Game
 //                $this->addCards($cards);
 //                return true;
 //            }
+            // player wants to use also a special card which forces players to draw cards
             if (($cards[0] > 20 && $cards[0] < 40) || $cards[0] == 5 || $cards[0] == 6) {
+                // it matters what symbol the playing cards have? if so, check them out
                 if ($rules['takeCards_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
+                // calculate how many cards the next player has to draw
                 if ($cards[0] == 5 || $cards[0] == 6) {
                     if (count($cards) == 2)
                         $takeCards = 15;
@@ -56,6 +76,8 @@ class Macao extends Game
                 $this->addCards($cards);
                 return true;
             }
+            // we check if the rules allow the cancellation of special carts
+            // and check the player's cards if they follow the rules
             if (!$this->checkStop($rules, $cards, $tableSymbol))
                 return false;
             unset($details['takeCards']);
@@ -64,8 +86,9 @@ class Macao extends Game
             return true;
         }
 
-        // If I need to wait
+        // If player needs to wait
         if (!empty($details['toWait'])) {
+            // player wants to use also a special card which forces players to wait
             if (intdiv($cards[0], 10) == $rules['waitCard']) {
 //                if ($rules['waitCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
 //                    return false;
@@ -74,6 +97,8 @@ class Macao extends Game
                 $this->addCards($cards);
                 return true;
             }
+            // we check if the rules allow the cancellation of special carts
+            // and check the player's cards if they follow the rules
             if (!$rules['stop_wait'] || !$this->checkStop($rules, $cards, $tableSymbol))
                 return false;
             unset($details['toWait']);
@@ -82,12 +107,14 @@ class Macao extends Game
             return true;
         }
 
-
+        // player wants to use a special card which forces players to draw cards
         if ((($cards[0] > 20) && ($cards[0] < 40)) || $cards[0] == 5 || $cards[0] == 6) {
-            if ((intdiv($cards[0], 10) != intdiv($tableCard, 10))) {// || ($tableCard > 4 && $cards[0] > 4)) {
+            // it matters what symbol the playing cards have? if so, check them out
+            if ((intdiv($cards[0], 10) != intdiv($tableCard, 10))) {
                 if ($rules['takeCards_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
             }
+            // calculate how many cards the next player has to draw
             if ($cards[0] == 5 || $cards[0] == 6) {
                 if (count($cards) == 2)
                     $takeCards = 15;
@@ -97,7 +124,9 @@ class Macao extends Game
             $this->setDetails($details);
             $this->addCards($cards);
             return true;
+        // player wants to use a special card which changes the next symbol to be used
         } elseif (intdiv($cards[0], 10) == $rules["changeSymbol"]) {
+            // it matters what symbol the playing cards have? if so, check them out
             if ($rules["changeSymbol"] != intdiv($tableCard, 10)) {
                 if ($rules['changeSymbol_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
@@ -107,16 +136,20 @@ class Macao extends Game
             $this->setDetails($details);
             $this->addCards($cards);
             return true;
+        // player wants to use a special card which forces players to wait
         } elseif (intdiv($cards[0], 10) == $rules["waitCard"]) {
+            // it matters what symbol the playing cards have? if so, check them out
             if ($rules["waitCard"] != intdiv($tableCard, 10)) {
                 if ($rules['waitCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
             }
+            // set how many turns the next player has to wait
             $details['toWait'] = count($cards);
             $this->setDetails($details);
             $this->addCards($cards);
             return true;
         } elseif ($rules["stopCard"] > 0 && intdiv($cards[0], 10) == $rules["stopCard"]) {
+            // it matters what symbol the playing cards have? if so, check them out
             if ($rules["stopCard"] != intdiv($tableCard, 10)) {
                 if ($rules['stopCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
                     return false;
@@ -125,6 +158,7 @@ class Macao extends Game
             $this->addCards($cards);
             return true;
         }
+        // if the player uses a regular card then check if it has the right symbol
         if (intdiv($cards[0], 10) != intdiv($tableCard, 10)) {
             if (!$this->checkSymbol($cards, $tableSymbol))
                 return false;
@@ -134,7 +168,17 @@ class Macao extends Game
         return true;
     }
 
-    private function checkStop($rules, $cards, $tableSymbol)
+    /**
+     * @param $rules - rules list
+     * @param $cards - the list of playing cards to be checked
+     * @param $tableSymbol - what symbol should be used
+     * @return bool
+     *
+     * Check if the rules allow the cancellation of special carts
+     * Check if player's cards have the right value
+     * and if it matters what symbol the playing cards have? if so, check them out
+     */
+    private function checkStop($rules, $cards, $tableSymbol): bool
     {
         if ($rules["stopCard"] > 0 && intdiv($cards[0], 10) == $rules["stopCard"]) {
             if (!$rules['stopCard_color'])
@@ -146,10 +190,13 @@ class Macao extends Game
 
     /**
      * @param Player $player
-     * @param array $cards
+     * @param array $cards - the list of playing cards to be checked
      * @return bool
+     *
+     * Check if playing cards have the same number
+     * and if the player has these cards in his hand
      */
-    public function checkCards(Player $player, array $cards)
+    public function checkCards(Player $player, array $cards): bool
     {
         for ($i = 1; $i < count($cards); $i++) {
             if (intdiv($cards[0], 10) != intdiv($cards[$i], 10))
@@ -158,7 +205,14 @@ class Macao extends Game
         return $player->checkCards($cards);
     }
 
-    private function checkSymbol(array $cards, $tableSymbol)
+    /**
+     * @param array $cards - the list of playing cards to be checked
+     * @param $tableSymbol - what symbol should be used
+     * @return bool
+     *
+     * check if there is at least one card with the correct symbol
+     */
+    private function checkSymbol(array $cards, $tableSymbol): bool
     {
         for ($i = count($cards) - 1; $i >= 0; $i--) {
             $match = false;
@@ -187,18 +241,16 @@ class Macao extends Game
     /**
      * @param Player $player
      * @throws GameException
+     *
+     * Initializing a new game
      */
-    public function new_game(Player $player)
+    public function newGame(Player $player)
     {
-        $deck = array(5, 6);
-        for ($i = 1; $i < 14; $i++) {
-            $num = $i * 10;
-            for ($j = 1; $j < 5; $j++)
-                array_push($deck, $num + $j);
-        }
-        shuffle($deck);
+        // Generate deck
+        $deck = $this->makeDeck(true,true);
         $this->setDeck($deck);
 
+        // player list initialization
         $round = [];
         $players_list = $player->readAll($player->getIdTable());
         if ($players_list->num_rows == 0)
@@ -214,6 +266,7 @@ class Macao extends Game
 
         $details = $this->getDetails();
 
+        // the winner of the last game will start the new one
         $round = array_values($round);
         if (!empty($details['rank'])) {
             $key = array_search($details['rank'][0]['id'], $round);
