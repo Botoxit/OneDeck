@@ -22,11 +22,13 @@ try {
     $player->readOne($_SESSION['id_player']);
     $razboi->readOne($player->getIdTable(), true);
 
+    // it's this player's turn?
     if ($razboi->getRound() != $player->getId())
         die(json_encode(array('status' => 0, 'message' => "Is not your turn.")));
 
     $player_cards = $player->getCards();
 
+    // if there is a war, calculate how many cards must be placed on the table
     if ($razboi->isWar()) {
         $details = $razboi->getDetails();
         if (!in_array($player->getId(), $details['inWar']))
