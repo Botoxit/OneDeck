@@ -34,7 +34,7 @@ try {
     if ($razboi->getHost() == $player->getId()) {
         if ($razboi->allPlayersReady()) {
             $razboi->newGame($player);
-            $razboi->update(true, false, true);
+            $razboi->update(true, false, false);
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
             die(json_encode(array('status' => 2)));
