@@ -47,7 +47,7 @@ try {
 //          For table with BOOT as a host
            if ($player->getIdTable() < 5 && $razboi->allPlayersReady()) {
                $razboi->newGame($player);
-               $razboi->update(true, false, true);
+               $razboi->update(true, false, false);
            }
 
             if (!$conn->commit())

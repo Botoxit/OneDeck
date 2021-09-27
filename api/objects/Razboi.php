@@ -262,7 +262,8 @@ class Razboi extends Game
         if ($this->getPlayerCount() > 1 && $this->getId() < 5 && $this->getRound() == $this->getId()) {
             $razboi = new Razboi();
             $razboi->setter($this->getId(), $this->getCards(), $this->round, $this->deck, $this->getDetails(), $this->getRules());
-            $razboi->nextPlayer($razboi->boot());
+            $razboi->boot();
+            $razboi->nextPlayer(false);
             $this->setRound($razboi->getRoundArray());
             $this->setCards($razboi->getCards());
             $this->setDeck($razboi->getDeck());

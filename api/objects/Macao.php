@@ -9,24 +9,6 @@ include_once 'Player.php';
 
 class Macao extends Game
 {
-    /**
-     * @param $id - table id
-     * @param $cards - the list of playing cards on the table
-     * @param $round - the list of players from the current game
-     * @param $deck - the remaining deck of playing cards
-     * @param $details - list of details parameters
-     * @param $rules - rules list
-     */
-    public function setter($id, $cards, $round, $deck, $details, $rules)
-    {
-        $this->setId($id);
-        $this->setCards($cards);
-        $this->setRound($round);
-        $this->setDeck($deck);
-        $this->setDetails($details);
-        $this->setRules($rules);
-    }
-
     // {"takeCards_color":0,"waitCard":4,"waitCard_color":1,"changeSymbol":1,"changeSymbol_color":0,"stopCard":7,"stopCard_color":0,"deck":1,"stop_wait":1}
     /**
      * @param array $cards - the list of playing cards to be checked

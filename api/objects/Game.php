@@ -32,6 +32,24 @@ class Game
     {
         $this->conn = Database::getConnection();
     }
+    
+    /**
+     * @param $id - table id
+     * @param $cards - the list of playing cards on the table
+     * @param $round - the list of players from the current game
+     * @param $deck - the remaining deck of playing cards
+     * @param $details - list of details parameters
+     * @param $rules - rules list
+     */
+    public function setter($id, $cards, $round, $deck, $details, $rules)
+    {
+        $this->setId($id);
+        $this->setCards($cards);
+        $this->setRound($round);
+        $this->setDeck($deck);
+        $this->setDetails($details);
+        $this->setRules($rules);
+    }
 
     /**
      * @param $id - id table
