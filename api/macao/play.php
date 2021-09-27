@@ -29,7 +29,7 @@ $macao = new Macao();
 
 try {
     $player->readOne($_SESSION['id_player']);
-    $macao->readOne($player->getIdTable());
+    $macao->readOne($player->getIdTable(), true);
     // if the player is the host, a new game is initialized
     if ($macao->getHost() == $player->getId()) {
         if ($macao->allPlayersReady()) {
@@ -46,7 +46,7 @@ try {
             $player->update();
 
             if ($player->getIdTable() < 5 && $macao->allPlayersReady()) {
-                $macao->new_game($player);
+                $macao->newGame($player);
                 $macao->update(true, false, true);
             }
 

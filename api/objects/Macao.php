@@ -90,8 +90,10 @@ class Macao extends Game
         if (!empty($details['toWait'])) {
             // player wants to use also a special card which forces players to wait
             if (intdiv($cards[0], 10) == $rules['waitCard']) {
+                // it matters what symbol the playing cards have? if so, check them out
 //                if ($rules['waitCard_color'] && !$this->checkSymbol($cards, $tableSymbol))
 //                    return false;
+                // calculate how many turns the next player has to wait
                 $details['toWait'] = $details['toWait'] + count($cards);
                 $this->setDetails($details);
                 $this->addCards($cards);
@@ -294,16 +296,62 @@ class Macao extends Game
             $this->nextPlayer($this->boot());
         }
 
-        $this->setCards($this->takeCards(1, true));
+        $this->setCards($this->chooseFirstCard());
     }
 
-    protected function nextPlayer(bool $macao)
+    /**
+     * @param bool $win
+     *
+     * Change the current round
+     * if the next player has to wait, we pass him
+     */
+    protected function nextPlayer(bool $win)
     {
-        parent::nextPlayer($macao);
+        parent::nextPlayer($win);
+        if (isset($this->details['waiting']) && isset($this->details['waiting'][$this->getRound()])) {
+            if ($this->details['waiting'][$this->getRound()] > 1)
+                $this->details['waiting'][$this->getRound()] -= 1;
+            else unset($this->details['waiting'][$this->getRound()]);
+            $this->nextPlayer(false);
+        }
         if ($this->getPlayerCount() > 1 && $this->getId() < 5 && $this->getRound() == $this->getId())
             $this->nextPlayer($this->boot());
     }
+    
+    private function chooseFirstCard()
+    {
+        $invalidFirst = array(5, 6, 21, 22, 23, 24, 31, 32, 33, 34);
+        if (array_search($this->deck[0], $invalidFirst) !== false) {
+            $cards = [];
+            //Debug::Log("firstCard is " . $this->deck[0], __FILE__);
+            for ($i = 1; $i < count($this->deck); $i++) {
+                if (array_search($this->deck[$i], $invalidFirst) == false) {
+                    array_push($cards, $this->deck[$i]);
+                    unset($this->deck[$i]);
+                    return $cards;
+                }
+            }
+        }
+        else return parent::takeCards(1);
+    }
 
+    /**
+     * @param int $count
+     * @return array - list of drawn cards
+     *
+     * if there are not enough playing cards in the deck,
+     * we shuffle the cards from table
+     * and call the parent class function
+     */
+    public function takeCards(int $count): array
+    {
+        if ($count > count($this->deck)) {
+            $this->deck = array_merge($this->deck, array_splice($this->cards, 1));
+            if (!shuffle($this->deck))
+                Debug::Log("Shuffle deck + old cards failed", __FILE__, "WARNING");
+        }
+        return parent::takeCards($count);
+    }
 
     public function boot()
     {
@@ -490,13 +538,12 @@ class Macao extends Game
 
         if ($this->getPlayerCount() > 1 && $this->getId() < 5 && $this->getRound() == $this->getId()) {
             $macao = new Macao();
-            $macao->copy_class($this->getId(), $this->getCards(), $this->round, $this->deck, $this->getDetails(), $this->getRules());
+            $macao->setter($this->getId(), $this->getCards(), $this->round, $this->deck, $this->getDetails(), $this->getRules());
             $macao->nextPlayer($macao->boot());
             $this->setRound($macao->getRoundArray());
             $this->setCards($macao->getCards());
             $this->setDeck($macao->getDeck());
             $this->setDetails($macao->getDetails());
         }
-
     }
 }

@@ -30,23 +30,25 @@ $razboi = new Razboi();
 try {
     $player->readOne($_SESSION['id_player']);
     $razboi->readOne($player->getIdTable(), true);
+    // if the player is the host, a new game is initialized
     if ($razboi->getHost() == $player->getId()) {
         if ($razboi->allPlayersReady()) {
-            $razboi->new_game($player);
+            $razboi->newGame($player);
             $razboi->update(true, false, true);
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
             die(json_encode(array('status' => 2)));
         } else die(json_encode(array('status' => -1)));
     } else {
+        // otherwise, player change ready status
         if ($razboi->getPlayerCount() < 2) {
             $ready = $player->ready();
             $player->update();
 //          For table with BOOT as a host
-//            if ($player->getIdTable() < 5 && $razboi->allPlayersReady()) {
-//                $razboi->new_game($player);
-//                $razboi->update(true, false, true);
-//            }
+           if ($player->getIdTable() < 5 && $razboi->allPlayersReady()) {
+               $razboi->newGame($player);
+               $razboi->update(true, false, true);
+           }
 
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);

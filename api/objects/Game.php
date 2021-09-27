@@ -122,9 +122,6 @@ class Game
             throw new GameException("Unable to update game chat for id: $this->id, $stmt->errno: $stmt->error", 3);
     }
 
-    /**
-     * @throws GameException
-     */
     public function updateChat()
     {
         $chat = json_encode($this->chat);
@@ -137,7 +134,13 @@ class Game
             throw new GameException("Unable to update game chat for id: $this->id, $stmt->errno: $stmt->error", 3);
     }
 
-    protected function nextPlayer(bool $done_cards)
+    /**
+     * @param bool $win_condition - is the winning condition fulfilled?
+     *
+     * We remove the current player from the list
+     * if it does not meet the condition of winning we add it at the end
+     */
+    protected function nextPlayer(bool $win_condition)
     {
         $current_player = array_splice($this->round, 0, 1);
         if (!$win_condition) {
@@ -209,6 +212,7 @@ class Game
         }
         // delete id from round attribut
         $key = array_search($player->getId(), $this->round);
+        //Debug::Log("deletePlayer script " . $key, __FILE__);
         if ($key !== false) {
             unset($this->round[$key]);
             $this->round = array_values($this->round);
@@ -223,13 +227,16 @@ class Game
         return $this->rules;
     }
 
+    /**
+     * @param $rules - game rules
+     */
     protected function setRules($rules)
     {
         $this->rules = $rules;
     }
 
     /**
-     * @param $rules - game rules
+     * @return array
      */
     public function getChat(): array
     {
@@ -256,7 +263,7 @@ class Game
     }
 
     /**
-     * @param array $cards
+     * @param array $cards - new playing cards that are placed on the table
      */
     protected function addCards(array $cards)
     {
@@ -325,31 +332,11 @@ class Game
      * @param int $count - the amount of playing cards
      * @return array - list of drawn cards
      */
-    public function takeCards(int $count, bool $firstCard = false): array
+    public function takeCards(int $count): array
     {
-        if ($count > count($this->deck)) {
-            $this->deck = array_merge($this->deck, array_splice($this->cards, 1));
-            if (!shuffle($this->deck))
-                Debug::Log("Shuffle deck + old cards failed", __FILE__, "WARNING");
-        }
-
-        if ($count <= count($this->deck)) {
-            $invalidFirst = array(5, 6, 21, 22, 23, 24, 31, 32, 33, 34);
-            if ($firstCard && (array_search($this->deck[0], $invalidFirst) !== false)) {
-                $cards = [];
-                //Debug::Log("firstCard is " . $this->deck[0], __FILE__);
-                for ($i = 1; $i < count($this->deck); $i++) {
-                    if (array_search($this->deck[$i], $invalidFirst) == false) {
-                        array_push($cards, $this->deck[$i]);
-                        unset($this->deck[$i]);
-                        return $cards;
-                    }
-                }
-            }
+        if ($count <= count($this->deck))
             return array_splice($this->deck, 0, $count);
-        } else {
-            return array_splice($this->deck, 0);
-        }
+        else return array_splice($this->deck, 0);
     }
 
     /**
