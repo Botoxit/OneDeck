@@ -34,7 +34,7 @@ try {
     if ($septica->getHost() == $player->getId()) {
         if ($septica->allPlayersReady()) {
             $septica->newGame($player);
-            $septica->update(true, false, true);
+            $septica->update(true, false, false);
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
             die(json_encode(array('status' => 2)));

@@ -81,7 +81,7 @@ try {
         $update_time = true;
     }
 
-    $game->update($update_time, false, true);
+    $game->update($update_time, false, false);
 
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);

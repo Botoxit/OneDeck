@@ -46,7 +46,7 @@ try {
         $game->readOne($id_table, true);
         $resetTime = $game->getRound() == $player->getId();
         $game->deletePlayer($player);
-        $game->update($resetTime,false,true);
+        $game->update($resetTime,false,false);
 
         // the table details are updated
         $table->setPlayersLimit($playerLimit);

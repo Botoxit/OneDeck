@@ -134,7 +134,7 @@ function kick_player($id_player, $id_table, $cards, $playing)
         if ($playing) {
             $game->readOne($id_table);
             $game->deletePlayer($player);
-            $game->update(true, false, true);
+            $game->update(true, false, false);
         }
 
         $player->delete();
