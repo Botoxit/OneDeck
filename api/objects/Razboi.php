@@ -50,8 +50,8 @@ class Razboi extends Game
                 Debug::Log($e->getMessage(), __FILE__, "EXCEPTION");
             }
         }
-        unset($details['rank']);
-        $this->setDetails($details);
+        
+        $this->setDetails(array('round_done' => true));
 
         $this->setRound($round);
         $this->setCards(array());
@@ -201,7 +201,7 @@ class Razboi extends Game
         $player = new Player();
         $player->readOne($current_player[0]);
         // if the player still has cards or the turn has not ended, we add it at the end
-        if (count($player->getCards()) > 0 || !isset($details['round_done']) || $details['round_done'] == false) {
+        if (!$win_condition && (count($player->getCards()) > 0 || !isset($details['round_done']) || $details['round_done'] == false)) {
             $this->round = array_merge($this->round, $current_player);
         } else {
             // if he finished the cards we add him to the ranking
@@ -211,14 +211,17 @@ class Razboi extends Game
             $this->setDetails($details);
         }
         // if the round is over and the next player has no more cards, we pass him
-        if (isset($details['round_done']) && $details['round_done'] == true) {
+        if ((isset($details['round_done']) && $details['round_done'] == true) || (!empty($details['inWar']) && in_array($this->getRound(), $details['inWar']))) {
             $player->readOne($this->getRound());
-            if ($this->getRound() > 0 && count($player->getCards()) == 0)
-                $this->nextPlayer(false);
+            if ($this->getRound() > 0 && count($player->getCards()) == 0) {
+                $this->nextPlayer(true);
+                return;
+            }
         }
         // if there is a war and the next player does not participate, we pass him
         if (isset($details['isWar']) && count($details['isWar']) > 0 && !in_array($this->getRound(), $details['isWar'])) {
             $this->nextPlayer(false);
+            return;
         }
         if ($this->getPlayerCount() > 1 && $this->getId() < 5 && $this->getRound() == $this->getId()) {
             $this->boot();
