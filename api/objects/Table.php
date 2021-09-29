@@ -49,7 +49,7 @@ class Table
      *
      * playerLimit = <players already at the table> * 10 + <maximum limit of players>
      */
-    public function setter(string $newName, string $newPassword, string $newGame, int $newPlayerLimit, array $newRules, int $newHost)
+    public function setter(string $newName, $newPassword, string $newGame, int $newPlayerLimit, array $newRules, int $newHost)
     {
         $this->name = $newName;
         $this->password = $newPassword;

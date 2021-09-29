@@ -34,7 +34,7 @@ class Razboi extends Game
         $round = array_values($round);
         $details = $this->getDetails();
         if (!empty($details['rank'])) {
-            $key = array_search($details['rank'][0]['id'], $round);
+            $key = array_search($details['rank'][count($details['rank']) - 1]['id'], $round);
             if ($key > 0) {
                 $players_slice = array_splice($round, 0, $key);
                 $round = array_merge($round, $players_slice);
@@ -50,8 +50,8 @@ class Razboi extends Game
                 Debug::Log($e->getMessage(), __FILE__, "EXCEPTION");
             }
         }
-        
-        $this->setDetails(array('round_done' => true));
+
+        $this->setDetails(array('round_done' => true, 'inWar' => []));
 
         $this->setRound($round);
         $this->setCards(array());
@@ -85,6 +85,7 @@ class Razboi extends Game
 
         // a new round begins?
         $details = $this->getDetails();
+
         if (isset($details['round_done']) && $details['round_done'] == true) {
             unset($details['inWar']);
             $table_cards = array();
@@ -102,13 +103,15 @@ class Razboi extends Game
         $biggest_card = -1;
         $winner_id = -1;
         // if all players have placed cards on the table and it is not war
-        if (count($table_cards) == $this->getPlayerCount() && (!isset($details['inWar']) || count($details['inWar']) == 0)) {
+        if (count($table_cards) >= $this->getPlayerCount() && (!isset($details['inWar']) || count($details['inWar']) == 0)) {
             // check who takes the playing cards from the table
             foreach ($table_cards as $id_player => $cards) {
                 if (count($cards) == 0) {
                     $round_done = false;
                     break;
                 }
+                if(!in_array($id_player, $this->round))
+                    continue;
                 // 'A' is the most valuable playing card
                 if (intdiv($cards[0], 10) == 1) {
                     if ($biggest_card == 1) {
@@ -144,8 +147,23 @@ class Razboi extends Game
         // if the round is over, we put the cards in the winning player's deck
         if ($round_done == true) {
             $all_cards = array();
-            foreach ($table_cards as $cards) {
+            $tmp_player = new Player();
+            foreach ($table_cards as $id_player => $cards) {
                 $all_cards = array_merge($all_cards, $cards);
+                if ($id_player == $player->getId() || $id_player == $winner_id)
+                    continue;
+                $tmp_player->readOne($id_player);
+                if (count($tmp_player->getCards()) == 0) {
+                    // if he finished the cards we add him to the ranking
+                    if (!isset($details['rank']))
+                        $details['rank'] = array(array('id' => $tmp_player->getId(), 'name' => $tmp_player->getName()));
+                    else array_push($details['rank'], array('id' => $tmp_player->getId(), 'name' => $tmp_player->getName()));
+                    $key = array_search($tmp_player->getId(), $this->round);
+                    if ($key !== false) {
+                        unset($this->round[$key]);
+                        $this->round = array_values($this->round);
+                    }
+                }
             }
             if ($winner_id == $player->getId()) {
                 $player->addCards($all_cards);
@@ -167,7 +185,7 @@ class Razboi extends Game
     public function isWar(): bool
     {
         $details = $this->getDetails();
-        if (!isset($details['inWar']))
+        if (!isset($details['inWar']) || count($details['inWar']) == 0)
             return false;
         return true;
     }
@@ -201,7 +219,7 @@ class Razboi extends Game
         $player = new Player();
         $player->readOne($current_player[0]);
         // if the player still has cards or the turn has not ended, we add it at the end
-        if (!$win_condition && (count($player->getCards()) > 0 || !isset($details['round_done']) || $details['round_done'] == false)) {
+        if (count($player->getCards()) > 0 || (!$win_condition && $details['round_done'] == false)) {
             $this->round = array_merge($this->round, $current_player);
         } else {
             // if he finished the cards we add him to the ranking
@@ -214,17 +232,25 @@ class Razboi extends Game
         if ((isset($details['round_done']) && $details['round_done'] == true) || (!empty($details['inWar']) && in_array($this->getRound(), $details['inWar']))) {
             $player->readOne($this->getRound());
             if ($this->getRound() > 0 && count($player->getCards()) == 0) {
+                $index = array_search($player->getId(), $details['inWar']);
+                if ($index >= 0) {
+                    unset($details['inWar'][$index]);
+                    $this->setDetails($details);
+                }
+                $this->nextCard($player, []);
                 $this->nextPlayer(true);
                 return;
             }
         }
         // if there is a war and the next player does not participate, we pass him
-        if (isset($details['isWar']) && count($details['isWar']) > 0 && !in_array($this->getRound(), $details['isWar'])) {
+        if (isset($details['inWar']) && count($details['inWar']) > 0 && !in_array($this->getRound(), $details['inWar'])) {
             $this->nextPlayer(false);
             return;
         }
         if ($this->getPlayerCount() > 1 && $this->getId() < 5 && $this->getRound() == $this->getId()) {
-            $this->boot();
+            if ($details['round_done'] == false) {
+                $this->boot();
+            }
             $this->nextPlayer(false);
         }
     }
@@ -255,7 +281,6 @@ class Razboi extends Game
         $this->nextCard($boot, $cards);
 
         $boot->update();
-        return;
     }
 
     public function deletePlayer(Player $player)
