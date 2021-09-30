@@ -35,6 +35,7 @@ try {
         if ($razboi->allPlayersReady()) {
             $razboi->newGame($player);
             $razboi->update(true, false, false);
+            $razboi->IncrementGameStats(2);
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
             die(json_encode(array('status' => 2)));
@@ -48,6 +49,7 @@ try {
            if ($player->getIdTable() < 5 && $razboi->allPlayersReady()) {
                $razboi->newGame($player);
                $razboi->update(true, false, false);
+               $razboi->IncrementGameStats(2);
            }
 
             if (!$conn->commit())

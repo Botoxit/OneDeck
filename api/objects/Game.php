@@ -32,7 +32,7 @@ class Game
     {
         $this->conn = Database::getConnection();
     }
-    
+
     /**
      * @param $id - table id
      * @param $cards - the list of playing cards on the table
@@ -280,6 +280,16 @@ class Game
         return true;
     }
 
+    public function IncrementGameStats($game_id)
+    {
+        $query = "UPDATE `stats` SET valoare = valoare + 1 WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param('i', $game_id);
+
+        if (!$stmt->execute())
+            Debug::Log("Unable to update stats for id: $this->id, $stmt->errno: $stmt->error");
+    }
+
     /**
      * @param array $cards - new playing cards that are placed on the table
      */
@@ -390,13 +400,13 @@ class Game
     }
 
     /**
-     * @throws GameException
      * @return bool
      *
      * Counts in the database how many players have in the
      * details field true value at the key "ready", and how many are in total.
      *
      * returns the true value of the equality between the two results.
+     * @throws GameException
      */
     public function allPlayersReady(): bool
     {
@@ -427,7 +437,7 @@ class Game
      */
     public function makeDeck(bool $addJokers, bool $shuffle): array
     {
-        if($addJokers)
+        if ($addJokers)
             $deck = array(5, 6);
         else $deck = array();
 
@@ -436,7 +446,7 @@ class Game
             for ($j = 1; $j < 5; $j++)
                 array_push($deck, $num + $j);
         }
-        if($shuffle)
+        if ($shuffle)
             shuffle($deck);
         return $deck;
     }

@@ -35,6 +35,7 @@ try {
         if ($macao->allPlayersReady()) {
             $macao->newGame($player);
             $macao->update(true, false, false);
+            $macao->IncrementGameStats(1);
             if (!$conn->commit())
                 throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
             die(json_encode(array('status' => 2)));
@@ -48,6 +49,7 @@ try {
             if ($player->getIdTable() < 5 && $macao->allPlayersReady()) {
                 $macao->newGame($player);
                 $macao->update(true, false, false);
+                $macao->IncrementGameStats(1);
             }
 
             if (!$conn->commit())
