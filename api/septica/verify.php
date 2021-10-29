@@ -55,17 +55,17 @@ try {
 
     // remove cards from the player's hand and check the winning condition
     $cards_count = $player->removeCards($post->cards);
-    if($cards_count == 0 && $septica->getDeckCount() < $septica->getPlayerCount())
-    {
-        $details = $septica->getDetails();
-        if (!isset($details['rank']))
-            $details['rank'] = array(array('id' => $player->getId(), 'name' => $player->getName()));
-        else array_push($details['rank'], array('id' => $player->getId(), 'name' => $player->getName()));
-        $septica->setDetails($details);
-    }
+//    if($cards_count == 0 && $septica->getDeckCount() < $septica->getPlayerCount())
+//    {
+//        $details = $septica->getDetails();
+//        if (!isset($details['rank']))
+//            $details['rank'] = array(array('id' => $player->getId(), 'name' => $player->getName()));
+//        else array_push($details['rank'], array('id' => $player->getId(), 'name' => $player->getName()));
+//        $septica->setDetails($details);
+//    }
 
     $player->update();
-    $septica->update(true, $cards_count == 0);
+    $septica->update(true, false);
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
     die(json_encode(array('status' => 1)));

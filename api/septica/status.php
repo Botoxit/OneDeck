@@ -42,7 +42,8 @@ try {
     $result['deck'] = $septica->getDeckCount();
     $result['chat'] = $septica->getChat();
     $result['details'] = $septica->getDetails();
-    if ($septica->getPlayerCount() < 2)
+    $new_game = $septica->getPlayerCount() < 2;
+    if ($new_game)
         $result['details']['new_game'] = -1;
     $result['status'] = 0; // it's not your turn or you are not ready
     $result['elapsedTime'] = strtotime("now") - $septica->getChangeAt();
@@ -69,7 +70,7 @@ try {
             else $table_item['pause'] = false;
 
             // the game hasn't started yet
-            if ($septica->getPlayerCount() < 2) {
+            if ($new_game) {
                 if ($septica->getHost() == $row['id'])
                     $table_item['status'] = 2;
                 elseif (isset($player_cards['ready']) && $player_cards['ready'] == true)
@@ -80,11 +81,13 @@ try {
                     $table_item['status'] = 1;
                 $table_item['cards'] = count($player_cards);
             }
+            if (isset($result['details']['points']) && !empty($result['details']['points'][$row['id']]))
+                $table_item['wait'] = $result['details']['points'][$row['id']];
             array_push($result['players'], $table_item);
         } else {
             $me = $i - 1;
             // the game hasn't started yet
-            if ($septica->getPlayerCount() < 2) {
+            if ($new_game) {
                 if ($septica->getHost() == $_SESSION['id_player']) {
                     $result['status'] = 2;
                 } elseif (isset($player_cards['ready']) && $player_cards['ready'] == true)
@@ -94,6 +97,8 @@ try {
                 if ($_SESSION['id_player'] == $septica->getRound())
                     $result['status'] = 1;
             }
+            if (isset($result['details']['points']) && !empty($result['details']['points'][$row['id']]))
+                $result['details']['iWait'] = $result['details']['points'][$row['id']];
         }
     }
 
@@ -104,7 +109,7 @@ try {
     }
 
     // ordering and updating rankings
-    if ($septica->getPlayerCount() < 2 && isset($result['details']['rank'])) {
+    if ($new_game && isset($result['details']['rank'])) {
         for ($i = 0; $i < count($result['details']['rank']); $i = $i + 1) {
             if (isset($result['details']['points'][$result['details']['rank'][$i]['id']]))
                 $result['details']['rank'][$i]['cards'] = $result['details']['points'][$result['details']['rank'][$i]['id']];
