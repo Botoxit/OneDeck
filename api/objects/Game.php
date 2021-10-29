@@ -282,9 +282,15 @@ class Game
 
     public function IncrementGameStats($game_id)
     {
-        $query = "UPDATE `stats` SET valoare = valoare + 1 WHERE id = ?";
+        $games = ['Macao', 'Razboi', 'Septica'];
+        $month = date("M");
+        $year = date("Y");
+        //$query = "UPDATE `stats` SET ? = ? + 1 WHERE month = ? AND year = ?";
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        $query = "INSERT INTO stats (month,year," . $games[$game_id] . ") VALUES (?,?,1) 
+                ON DUPLICATE KEY UPDATE " . $games[$game_id] . "=" . $games[$game_id] . "+1";
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('i', $game_id);
+        $stmt->bind_param('si', $month, $year);
 
         if (!$stmt->execute())
             Debug::Log("Unable to update stats for id: $this->id, $stmt->errno: $stmt->error");
