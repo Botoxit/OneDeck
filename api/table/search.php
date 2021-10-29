@@ -78,7 +78,7 @@ try {
         array_push($table_list, $table_item);
     }
     if (count($table_list) > 0)
-        die(json_encode(array('status' => 1, 'table' => $table_list)));
+        die(json_encode(array('status' => 1, 'table' => $table_list), JSON_PRETTY_PRINT));
     die(json_encode(array('status' => 0)));
 } catch (GameException $e) {
     GameException::exitMessage($e->getCode());
