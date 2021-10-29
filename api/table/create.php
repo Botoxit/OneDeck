@@ -33,6 +33,8 @@ try {
     if (!empty($post->password))
         $password = $post->password;
     $table = new Table();
+    if ($post->game == "Razboi" && $post->playersLimit > 14)
+        $post->playersLimit = 14;
     $table->setter($post->tableName, $password, $post->game, $post->playersLimit, (array)$post->rules, $player->getId());
     // Create table
     $idTable = $table->create();
