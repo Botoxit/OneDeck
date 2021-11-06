@@ -39,10 +39,11 @@ try {
     $septica->setDetails($details);
 
     // is it a turn to draw cards?
-    if (!isset($details['round_done']) || $details['round_done'] == false)
-        if($player->getId() != $details['current_start'] || $player->getId() == $details['next_start'])
+    if (!isset($details['round_done']) || $details['round_done'] == false) {
+        if ($player->getId() != $details['current_start'] || $player->getId() == $details['next_start'])
             die(json_encode(array('status' => 0, 'message' => "You need to place a card on table!")));
-        else $septica->end_round();
+        else $septica->end_round(true);
+    }
 
     $owned_cards = count($player->getCards());
     if ($owned_cards == 4)
@@ -56,7 +57,7 @@ try {
     $septica->update(true);
     if (!$conn->commit())
         throw new GameException("Commit work failed, $conn->errno: $conn->error", 4);
-    if(count($cards) == 0)
+    if (count($cards) == 0)
         die(json_encode(array('status' => 0, 'cards' => $cards)));
     die(json_encode(array('status' => 1, 'cards' => $cards)));
 } catch (GameException $e) {
