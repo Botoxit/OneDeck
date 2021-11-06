@@ -90,6 +90,7 @@ class Razboi extends Game
             unset($details['inWar']);
             $table_cards = array();
             $details['round_done'] = false;
+            $details['changeSymbol'] = 0;
         }
 
         // placing the cards on the table
@@ -165,6 +166,7 @@ class Razboi extends Game
                     }
                 }
             }
+            $details['changeSymbol'] = count($all_cards);
             if ($winner_id == $player->getId()) {
                 $player->addCards($all_cards);
             } else {
