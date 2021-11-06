@@ -144,8 +144,6 @@ class Septica extends Game
         if (!$win_condition || count($this->deck) > count($this->round))
             $this->round = array_merge($this->round, $current_player);
         $details = $this->getDetails();
-        $player = new Player();
-        $player->readOne($this->getRound());
 
         // all players put a card on the table or drew one
         if ($this->getRound() == $details['current_start']) {
@@ -168,19 +166,26 @@ class Septica extends Game
             }
         }
 
+        $player = new Player();
+        $player->readOne($this->getRound());
+        $details = $this->getDetails();
         if (count($this->deck) == 0 && $details['round_done'] == false) {
-
             $end_game = $details['total_cards'] - $details['played_cards'] == 0;
             if ($details['total_cards'] - $details['played_cards'] == 1) {
-                $is_new_round = count($this->getCards()) == 0;
-                $special_situation = $details['current_start'] != $details['next_start'] && count($player->getCards()) == 0;
-                $special_situation2 = $this->getRound() == $details['current_start'] && !$is_new_round;
-                $special_card = intdiv($player->getCards()[0], 10);
-                $first_card = intdiv($this->cards[count($this->cards) - 1], 10);
+                if (count($this->getCards()) == 0)
+                    $end_game = true;
+                else {
+                    $special_situation = $details['current_start'] != $details['next_start'] && count($player->getCards()) == 0;
+                    $special_situation2 = $this->getRound() == $details['current_start'];
+                    $special_card = 0;
+                    if(count($player->getCards()) != 0)
+                        $special_card = intdiv($player->getCards()[0], 10);
+                    $first_card = intdiv($this->cards[count($this->cards) - 1], 10);
 
-                $end_game = $is_new_round || $special_situation;
-                $end_game = $end_game || ($special_situation2 && $special_card != 7 && $special_card != $first_card);
+                    $end_game = $special_situation;
+                    $end_game = $end_game || ($special_situation2 && $special_card != 7 && $special_card != $first_card);
 //                $end_game = $end_game || ($special_situation2 && $special_card == 8 && $details['opt_taie']);
+                }
             }
             if ($end_game) {
                 $details['round_done'] = true;
@@ -188,6 +193,8 @@ class Septica extends Game
                     $details['rank'] = array(array('id' => $player->getId(), 'name' => $player->getName()));
                 else array_push($details['rank'], array('id' => $player->getId(), 'name' => $player->getName()));
                 $this->setDetails($details);
+                if (count($this->getCards()) != 0)
+                    $this->end_round();
                 array_splice($this->round, 0, 1);
             }
         }
@@ -196,7 +203,7 @@ class Septica extends Game
     /**
      * We end this round and count the points won
      */
-    public function end_round()
+    public function end_round($from_take_cards = false)
     {
         $details = $this->getDetails();
         $details['round_done'] = true;
@@ -207,16 +214,17 @@ class Septica extends Game
         }
         if (!isset($details['points']))
             $details['points'] = array();
-        if (!isset($details['points'][$this->getRound()]))
-            $details['points'][$this->getRound()] = $points;
-        else $details['points'][$this->getRound()] += $points;
+        if (!isset($details['points'][$details['next_start']]))
+            $details['points'][$details['next_start']] = $points;
+        else $details['points'][$details['next_start']] += $points;
         // if there are no more cards in the pack,
         // we will skip the round in which the cards are drawn
         if ($this->getDeckCount() == 0) {
-            $this->setStartPlayer($details['next_start']);
             $details['round_done'] = false;
             $this->setCards(array());
             $details['current_start'] = $details['next_start'];
+            if (!$from_take_cards)
+                $this->setStartPlayer($details['next_start']);
         }
         $this->setDetails($details);
     }
