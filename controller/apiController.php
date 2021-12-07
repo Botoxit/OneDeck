@@ -30,7 +30,7 @@ class apiController extends Controller
         }
         if ($ver < 2.7)
             GameException::exitMessage(22);
-        die(json_encode(array("status" => 0)));
+        die(json_encode(array("status" => 0, "message" => session_id())));
     }
 
     /**
