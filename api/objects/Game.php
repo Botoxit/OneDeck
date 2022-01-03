@@ -283,7 +283,7 @@ class Game
     public function IncrementGameStats($game_id)
     {
         $games = ['Macao', 'Razboi', 'Septica'];
-        $month = date("M");
+        $month = date("m");
         $year = date("Y");
         //$query = "UPDATE `stats` SET ? = ? + 1 WHERE month = ? AND year = ?";
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);

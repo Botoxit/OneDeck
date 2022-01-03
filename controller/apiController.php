@@ -86,19 +86,32 @@ class apiController extends Controller
         } else die(json_encode(array("status" => -1)));
     }
 
-    public function stats(string $month = "", int $year = 0)
+    public function stats($year = 2020, int $month = 0)
     {
         header('Content-Type: application/json');
+        if ($year != 'all' && (intval($year) < 2020 || intval($year) > 3020)) {
+            http_response_code(404);
+            die("{\"status\"=> -1}");
+        }
+        if ($month < 0 || $month > 12) {
+            http_response_code(404);
+            die("{\"status\"=> -1}");
+        }
         $conn = Database::getConnection();
-        if ($month == "")
-            $month = date("M");
-        if ($year == 0)
-            $year = date("Y");
-        if ($month == 'all')
+        if ($year == 'all')
             $stmt = $conn->prepare("SELECT * FROM stats");
         else {
-            $stmt = $conn->prepare("SELECT * FROM stats WHERE month = ? AND year = ?");
-            $stmt->bind_param('si', $month, $year);
+            if ($year > 2020 && $month == 0) {
+                $stmt = $conn->prepare("SELECT * FROM stats WHERE year = ?");
+                $stmt->bind_param('i', $year);
+            } else {
+                if ($year == 2020) {
+                    $year = date("Y");
+                    $month = date("m");
+                }
+                $stmt = $conn->prepare("SELECT * FROM stats WHERE month = ? AND year = ?");
+                $stmt->bind_param('ii', $month, $year);
+            }
         }
         if (!$stmt->execute()) {
             Debug::Log("Unable to read stats, $stmt->errno: $stmt->error");
